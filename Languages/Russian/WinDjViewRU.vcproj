@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="WinDjViewRU"
 	ProjectGUID="{1DD07ECA-099C-49C4-9E1C-33C6DE1D8FE0}"
 	RootNamespace="WinDjViewRU"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -78,6 +79,8 @@
 				SuppressStartupBanner="true"
 				GenerateManifest="false"
 				ResourceOnlyDLL="true"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				ImportLibrary=".\Release/WinDjViewRU.lib"
 				TargetMachine="1"
 			/>
@@ -101,9 +104,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"

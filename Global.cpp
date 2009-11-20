@@ -704,7 +704,7 @@ UINT GetMouseScrollLines()
 	static UINT msgGetScrollLines;
 	static WORD nRegisteredMessage;
 
-	if (afxData.bWin95)
+	if (true)
 	{
 		if (nRegisteredMessage == 0)
 		{

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "WinDjView.h"
 #include "MyColorPicker.h"
-
+#include "MyTheme.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -5,6 +5,8 @@
 // $Id: MyTheme.h,v 1.5 2007/02/10 22:01:37 zhezherun Exp $
 
 #pragma once
+
+#ifndef _UXTHEME_H_ // This shit already defined by Windows
 #pragma pack(push,4)
 
 typedef HANDLE HTHEME;
@@ -108,6 +110,8 @@ struct TMSCHEMAINFO
 #define WM_THEMECHANGED     0x031A
 #endif
 
+#endif // _UXTHEME_H_
+
 bool IsThemed();
 
 HTHEME XPOpenThemeData(HWND hwnd, LPCWSTR pszClassList);
@@ -198,6 +202,7 @@ HRESULT XPEnableTheming(BOOL fEnable);
 HRESULT XPDrawThemeBackgroundEx(HTHEME hTheme, HDC hdc,
     int iPartId, int iStateId, const RECT* pRect, const DTBGOPTS* pOptions);
 
+#ifndef _UXTHEME_H_ // This shit already defined by Windows
 
 /////////////////////////////////////////////////////////////////////
 // Theme Manager properties, parts, states, etc
@@ -1364,3 +1369,5 @@ enum MENUBANDSTATES
     MDS_CHECKED = 5,
     MDS_HOTCHECKED = 6,
 };
+
+#endif // _UXTHEME_H_

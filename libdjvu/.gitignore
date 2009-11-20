@@ -1,0 +1,6 @@
+Objs/
+ObjsU/
+Objs.dbg/
+ObjsU.dbg/
+libdjvu*.lib
+vc90.pdb

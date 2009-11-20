@@ -1,0 +1,7 @@
+Debug_Unicode/
+Release_Unicode/
+Debug/
+Release/
+*.ncb
+*.suo
+WinDjView.vcproj.*.user
