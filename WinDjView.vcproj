@@ -189,6 +189,7 @@
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				ProgramDatabaseFile=".\Release_Unicode/WinDjView.pdb"
 				SubSystem="2"
+				LinkTimeCodeGeneration="1"
 				EntryPointSymbol="wWinMainCRTStartup"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
