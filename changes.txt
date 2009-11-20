@@ -1,0 +1,213 @@
+WinDjView version history
+Copyright (C) 2004-2009 Andrew Zhezherun
+----------------------------------------
+
+Changes in version 1.0.3 (2009-08-15):
+* Fixed a problem with exiting fullscreen mode introduced in 1.0.2.
+
+Changes in version 1.0.2 (2009-08-14):
++ Export multiple pages at once via multiple selection in the
+  thumbnails view.
++ Support for additional image formats: PNG, GIF, TIF, JPG
+  (Windows XP or later required, or GDI+ on older versions).
++ Each document now has its own history (back/forward buttons).
+* Several bug fixes.
+
+Changes in version 1.0.1 (2009-03-20):
++ Tabs can be closed with wheel click or middle click.
++ Use new style file dialogs on Vista.
++ File open and save dialogs can be resized.
+* Fixed a problem with bookmarks not working immediately after import.
+* Several minor fixes.
+
+Changes in version 1.0 (2009-02-19):
+# Finally, version number starts with one! This means that the program
+  is officially considered stable after years of development.
+! Added multiple top-level documents mode.
+! Added a tab bar to the single-window mode.
++ Added an option to enable continuous scrolling in fullscreen mode.
++ Added an option to order pages from right to left in facing mode.
++ User-created bookmarks and annotations can be imported and exported.
++ More embedded hyperlink and annotation types are supported.
++ Drag mode is activated when right mouse button is pressed.
++ Added support for dictionaries that look up the word under mouse pointer.
++ Thumbnail size can now be enlarged or reduced.
++ Document properties can be accessed from the File menu.
++ Added F3 hotkey for Find Next.
++ Added support for Unicode Supplementary Planes in contents and index.
++ DPI value is now set when exporting page or selection as bitmap.
++ Added a warning if WinDjView is not the default DjVu viewer.
++ Added an automatic weekly check for updates.
+* Fixed saving "First page alone" setting for every document.
+* Fixed crash in magnify tool after rotating the page.
+* Fixed crash when exiting fullscreen mode.
+* Fixed crash when compiled with Visual Studio 2005.
+* Many other small fixes and improvements.
+
+Changes in version 0.5 (2007-05-30):
+! Implemented user-created bookmarks and annotations.
+! Added rectangle tool: can be used to create an annotation,
+  to zoom in, to print selected region or to export it to a bitmap file.
+! Integrated dictionary features of DjVuDic program.
++ Open page and view settings can be restored when opening a file.
++ Page number can be specified when opening files via command line.
++ Back/Forward keys on multimedia keyboards now work as Alt+arrows.
++ Reorganized Settings dialog.
++ Added an option to invert colors.
++ Added an option to change display units (centimeters, millimeters, inches).
++ New printing options: auto-rotate pages, booklet printing.
+* Improved interface responsiveness when opening and closing documents.
+* Improvements for files with large shared dictionaries:
+  * Reduced memory usage.
+  * Fixed interface stalls.
+  * Increased decoding speed.
+* Fixed slow loading of large bookmark trees.
+* Fixed printing in two pages per sheet mode.
+* Fixed a crash in print dialog with some printers.
+* A number of other small fixes and improvements.
+
+Changes in version 0.4.3 (2006-09-15):
++ Added panning when mouse wheel is pressed.
+* Improved performance of magnifying glass.
+* Fixed displaying UTF-8 bookmarks on pre-XP systems.
+* Fixed problem with long documents on Win98 when thumbnails are on.
+* Fixed font issues.
+* Several crash fixes.
+
+Changes in version 0.4.2 (2006-07-24):
+! Added magnifying glass tool.
++ Added an option to wrap long bookmarks.
++ Added an option to hide scrollbars in fullscreen mode.
++ Added an option to invert direction of Ctrl+Mouse Wheel zooming.
++ Added an option to close the program when Escape is pressed.
++ Added keyboard shortcuts to rotate pages, change layouts and open settings.
+* Fixed Open File dialog (.djv files were not displayed).
+* Fixed print dialog: collate option is now always available.
+* Fixed printing order for custom page ranges.
+* Fixed a problem with XP themes.
+* Several crash fixes, including a patch from KViewShell DjVu plugin.
+
+Changes in version 0.4.1 (2006-02-25):
+! Added support for JPEG-encoded DjVu files.
++ Added an option to select different scaling algorithm
+  (slower, but gives better results on low zoom levels).
++ Reduced redrawing when switching documents.
++ Added autoscroll when selecting text by dragging.
++ Rendered pages are reused when entering/exiting fullscreen mode.
++ Added Home/End keyboard shortcuts.
++ Added an option to warn when closing multiple documents.
+* Fixed saving and restoring maximized main window state.
+* Fixed displaying floating-point numbers in non-English locales.
+* Fixed text selection when a page has nonzero original rotation.
+* Fixed page caching (caused high CPU and memory usage in some situations).
+* Fixed displaying tooltips for annotations in fullscreen mode.
+
+Changes in version 0.4 (2006-01-18):
+! Unicode build for Windows 2k/XP.
+! Added support for switching user interface languages.
+! Added facing and continuous-facing page layouts.
++ Added support for hilighted annotations.
++ Display mode and/or zoom specified in the document are used when opening.
++ Improved page display (borders and background).
++ In fullscreen mode cursor is hidden if mouse doesn't move for a few seconds.
++ Printer settings are retained while application is running.
++ To quickly enter drag more, shift key can be pressed.
+* Fixed a problem with WinDjView not responding for a few seconds
+  after opening a document on some systems.
+* Fixed a few crashes in print dialog.
+
+Changes in version 0.3.6 (2005-12-21):
+! Multithreading fixes: WinDjView should work more stable, especially
+  on multicore, multiprocessor and hyperthreaded systems.
++ Print dialog now takes into account physical printer margins
+  by default; added an option to ignore them (old behavior).
++ Print dialog now takes into account display mode (foreground,
+  background, black and white or color).
+* Fixed bug with preview in print dialog and printing: color pages
+  sometimes were not shown in preview and not printed.
+* Fixed bug in print dialog: clicking Properties button
+  sometimes resets printing options.
+* Fixed parsing print ranges in print dialog.
+* Fixed paper orientation: original orientation as specified
+  in the file is correctly applied.
+* Fixed printing odd/even pages in one page per sheet mode.
+
+Changes in version 0.3.5 (2005-06-14):
++ Added "Save Copy As" dialog.
+* Fixed a crash when opening some corrupted files.
+* Fixed opening files with a '#' character in filename.
+* Fixed a problem which could cause crashes after printing and after
+  checking for update.
+
+Changes in version 0.3.4 (2005-05-02):
++ Added "Go To Page" dialog.
++ Added licensing info to About dialog.
+* Fixed crash when using Search Results.
+* Fixed wrong page bounds calculation in single page layout.
+* Fixed text searching in single page layout.
+! WinDjView can now be compiled with VC6.0.
+
+Changes in version 0.3.3 (2005-03-31):
++ Improved keyboard navigation in fullscreen mode.
++ Show all links works in fullscreen mode.
++ Added zoom in/out in fullscreen mode.
++ Added zoom in/out with Ctrl+Mouse Wheel.
++ Added an option to enable/disable switching pages in fullscreen mode
+  by mouse clicks.
+* Fixed crash when exiting fullscreen mode on Windows 98.
+* Fixed window positioning when task bar is always visible.
+* Fixed wrong resolution of first page in single page layout.
+
+Changes in version 0.3.2 (2005-03-19):
+! Added fullscreen mode.
++ Added "Find All" button which displays search results in a list.
++ Added status bar indicators for page count and current page size.
++ Added brightness, contrast and gamma adjustment.
++ Added display modes (Color/B&W/Foreground/Background).
++ Shift key shows all hyperlinks on a page.
+* Fixed some issues with single-page layout.
+
+Changes in version 0.3.1 (2005-03-08):
+! Added bookmarks.
+! Added text selection, copying to clipboard and export to file.
++ Added zoom in/out toolbar buttons.
++ Added an option to disable generating thumbnails in background.
++ Added checking for updates.
++ Window title specifies file name first.
+* Thumbnails fixes and improvements.
+
+Changes in version 0.3 (2005-02-19):
+! Added thumbnails.
+! Added text searching.
++ Added hyperlink support.
++ Significantly reduced memory usage due to new caching algorithm
+  (+/- 2 screens are stored as bitmaps, +/- 10 screens are stored
+  in a decoded form for faster rendering).
+* Fixed continuous mode in Windows 98.
+* Fixed mouse wheel scrolling in Windows 98.
+* Fixed combo boxes on the toolbar in Windows 2000.
+* Fixed network printer detection in Windows 2000.
+
+Changes in version 0.2.3 (2004-10-30):
+* Fixed opening read-only files (i.e. off a CDROM).
+
+Changes in version 0.2.2 (2004-10-28):
++ Additional bitmaps are cached (+/- one screen) for more seamless scrolling
+  in continuous mode.
++ Pages can be exported to .bmp files.
++ WinDjView can associate itself with .djvu/.djv files in Explorer.
++ In single page mode, when no scrollbars are visible, mouse wheel
+  switches to next/previous page.
+* Fixed horizontal centering in continuous view when switching from
+  Actual Size mode to Zoom 100%.
+
+Changes in version 0.2.1 (2004-09-19):
+* Fixed several bugs in continuous mode.
+
+Changes in version 0.2 (2004-09-12):
+! Added continuous page display mode.
++ Improved speed; next/previous pages should display faster.
+- Removed non-functional "Print Preview" command
+  (may be added in future releases).
+
+First public release: version 0.1 (2004-07-22).
