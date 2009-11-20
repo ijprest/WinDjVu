@@ -268,7 +268,8 @@ CDjVuView::CDjVuView()
 	  m_nPendingPage(-1), m_nClickedPage(-1), m_nMode(Drag),
 	  m_bHasSelection(false), m_nDisplayMode(Color), m_bShiftDown(false),
 	  m_bNeedUpdate(false), m_bCursorHidden(false), m_bDraggingPage(false),
-	  m_bDraggingText(false), m_bFirstPageAlone(false), m_bRightToLeft(false),
+	  m_bDraggingText(false), m_bFirstPageAlone(false), 
+	  m_bWidePageAlone(true), m_bRightToLeft(false),
 	  m_bDraggingMagnify(false), m_bControlDown(false), m_nType(Normal),
 	  m_bHoverIsCustom(false), m_bDraggingRect(false), m_nSelectionPage(-1),
 	  m_pHoverAnno(NULL), m_pClickedAnno(NULL), m_bDraggingLink(false),
@@ -917,6 +918,7 @@ void CDjVuView::OnInitialUpdate()
 		m_nMode = pAppSettings->nDefaultMode;
 		m_nLayout = pAppSettings->nDefaultLayout;
 		m_bFirstPageAlone = false;
+		m_bWidePageAlone = true;
 		m_bRightToLeft = false;
 		m_nZoomType = pAppSettings->nDefaultZoomType;
 		m_fZoom = pAppSettings->fDefaultZoom;
@@ -945,6 +947,7 @@ void CDjVuView::OnInitialUpdate()
 		{
 			m_nLayout = pDocSettings->nLayout;
 			m_bFirstPageAlone = pDocSettings->bFirstPageAlone;
+			m_bWidePageAlone = pDocSettings->bWidePageAlone;
 			m_bRightToLeft = pDocSettings->bRightToLeft;
 			theApp.GetAppSettings()->nDefaultLayout = m_nLayout;
 		}
@@ -971,6 +974,7 @@ void CDjVuView::OnInitialUpdate()
 		pDocSettings->nDisplayMode = m_nDisplayMode;
 		pDocSettings->nLayout = m_nLayout;
 		pDocSettings->bFirstPageAlone = m_bFirstPageAlone;
+		pDocSettings->bWidePageAlone = m_bWidePageAlone;
 		pDocSettings->bRightToLeft = m_bRightToLeft;
 		pDocSettings->nRotate = m_nRotate;
 
@@ -1976,6 +1980,10 @@ void CDjVuView::PreparePageRectFacing(const CSize& szBounds, int nPage)
 				pPage->GetSize(m_nRotate), pPage->info.nDPI, pPage->szBitmap,
 				pNextPage->GetSize(m_nRotate), pNextPage->info.nDPI, pNextPage->szBitmap);
 	}
+	else if (m_bWidePageAlone && pPage->IsWide())
+	{
+		pPage->szBitmap = CalcPageSize(szBounds, pPage->GetSize(m_nRotate), pPage->info.nDPI);
+	}
 	else
 	{
 		CalcPageSizeFacing(szBounds,
@@ -2012,7 +2020,7 @@ void CDjVuView::PreparePageRectFacing(const CSize& szBounds, int nPage)
 		pPage->ptOffset.x += pPage->szBitmap.cx + m_nFacingGap + 2*m_nPageBorder + m_nPageShadow;
 		pPage->rcDisplay.right = 2*pPage->rcDisplay.Width() + m_nFacingGap;
 	}
-	else
+	else if(!pPage->IsWide())
 	{
 		pPage->rcDisplay.right = 2*pPage->rcDisplay.Width() + m_nFacingGap;
 	}
@@ -2052,7 +2060,7 @@ void CDjVuView::OnViewPreviouspage()
 {
 	int nPage = m_nPage - 1;
 	if (m_nLayout == Facing || m_nLayout == ContinuousFacing)
-		--nPage;
+		nPage = FixPageNumber(nPage);
 
 	nPage = max(0, nPage);
 	RenderPage(nPage);
@@ -5955,6 +5963,7 @@ void CDjVuView::OnViewFullscreen()
 	pView->m_nType = Fullscreen;
 	pView->m_nMode = (theApp.GetAppSettings()->bFullscreenClicks ? NextPrev : Drag);
 	pView->m_bFirstPageAlone = m_bFirstPageAlone;
+	pView->m_bWidePageAlone = m_bWidePageAlone;
 	pView->m_bRightToLeft = m_bRightToLeft;
 	pView->m_nZoomType = ZoomFitPage;
 	pView->m_nDisplayMode = m_nDisplayMode;
@@ -6235,7 +6244,9 @@ bool CDjVuView::IsValidPage(int nPage) const
 {
 	ASSERT(m_nLayout == Facing || m_nLayout == ContinuousFacing);
 
-	if (m_bFirstPageAlone)
+	if(m_bWidePageAlone)
+		return true;
+	else if (m_bFirstPageAlone)
 		return (nPage == 0 || nPage % 2 == 1);
 	else
 		return (nPage % 2 == 0);
@@ -6245,6 +6256,8 @@ bool CDjVuView::HasFacingPage(int nPage) const
 {
 	ASSERT(IsValidPage(nPage));
 
+	if(m_bWidePageAlone && m_pages[nPage].IsWide())
+		return false;
 	if (m_bFirstPageAlone)
 		return (nPage > 0 && nPage < m_nPageCount - 1);
 	else
@@ -6275,10 +6288,23 @@ int CDjVuView::FixPageNumber(int nPage) const
 	if (m_nLayout == SinglePage || m_nLayout == Continuous)
 		return nPage;
 
-	if (m_bFirstPageAlone)
-		return (nPage == 0 ? 0 : nPage - ((nPage - 1) % 2));
+	if (m_bWidePageAlone)
+	{
+		// Much more complicated
+		for (int i = 0, last_i = 0; i < m_nPageCount; last_i = i, i = GetNextPage(i))
+		{
+			if (nPage < i) 
+				return last_i;
+		}
+		return nPage;
+	}
 	else
-		return (nPage - nPage % 2);
+	{
+		if (m_bFirstPageAlone)
+			return (nPage == 0 ? 0 : nPage - ((nPage - 1) % 2));
+		else
+			return (nPage - nPage % 2);
+	}
 }
 
 int CDjVuView::GetNextPage(int nPage) const
@@ -6287,10 +6313,12 @@ int CDjVuView::GetNextPage(int nPage) const
 		return nPage + 1;
 
 	ASSERT(IsValidPage(nPage));
-	if (m_bFirstPageAlone)
-		return (nPage == 0 ? 1 : nPage + 2);
+	if (m_bFirstPageAlone && nPage == 0)
+		return 1;
+	else if(m_bWidePageAlone && m_pages[nPage].IsWide())
+		return nPage + 1;
 	else
-		return (nPage + 2);
+		return nPage + 2;
 }
 
 void CDjVuView::SetLayout(int nLayout, int nPage, const CPoint& ptOffset)
@@ -6358,6 +6386,7 @@ void CDjVuView::StartMagnify()
 	pView->m_nMode = Drag;
 	pView->m_nLayout = m_nLayout;
 	pView->m_bFirstPageAlone = m_bFirstPageAlone;
+	pView->m_bWidePageAlone = m_bWidePageAlone;
 	pView->m_bRightToLeft = m_bRightToLeft;
 	pView->m_nDisplayMode = m_nDisplayMode;
 	pView->m_nRotate = m_nRotate;

@@ -581,6 +581,7 @@ static const TCHAR pszAttrZoomType[] = _T("zoom-type");
 static const TCHAR pszAttrZoom[] = _T("zoom");
 static const TCHAR pszAttrLayout[] = _T("layout");
 static const TCHAR pszAttrFirstPage[] = _T("first-page");
+static const TCHAR pszAttrWidePage[] = _T("wide-page");
 static const TCHAR pszAttrRightToLeft[] = _T("right-to-left");
 static const TCHAR pszAttrDisplayMode[] = _T("display-mode");
 static const TCHAR pszAttrRotate[] = _T("rotate");
@@ -590,8 +591,8 @@ static const TCHAR pszTagContent[] = _T("content");
 
 DocSettings::DocSettings()
 	: nPage(-1), ptOffset(0, 0), nZoomType(-10), fZoom(100.0), nLayout(-1),
-	  bFirstPageAlone(false), bRightToLeft(false), nDisplayMode(-1), nRotate(0),
-	  nOpenSidebarTab(-1)
+	  bFirstPageAlone(false), bWidePageAlone(true), bRightToLeft(false), 
+		nDisplayMode(-1), nRotate(0), nOpenSidebarTab(-1)
 {
 }
 
@@ -611,6 +612,7 @@ GUTF8String DocSettings::GetXML(bool skip_view_settings) const
 				pszTagSettings, pszAttrStartPage, nPage, pszAttrOffsetX, ptOffset.x,
 				pszAttrOffsetY, ptOffset.y, pszAttrZoomType, nZoomType, pszAttrZoom, fZoom,
 				pszAttrLayout, nLayout, pszAttrFirstPage, static_cast<int>(bFirstPageAlone),
+				pszAttrWidePage, static_cast<int>(bWidePageAlone),
 				pszAttrRightToLeft, static_cast<int>(bRightToLeft),
 				pszAttrDisplayMode, nDisplayMode, pszAttrRotate, nRotate,
 				pszAttrOpenSidebarTab, nOpenSidebarTab);
@@ -671,6 +673,10 @@ void DocSettings::Load(const XMLNode& node)
 		int nFirstPage;
 		if (node.GetIntAttribute(pszAttrFirstPage, nFirstPage))
 			bFirstPageAlone = (nFirstPage != 0);
+
+		int nWidePage;
+		if (node.GetIntAttribute(pszAttrWidePage, nWidePage))
+			bWidePageAlone = (nWidePage != 0);
 
 		int nRightToLeft;
 		if (node.GetIntAttribute(pszAttrRightToLeft, nRightToLeft))

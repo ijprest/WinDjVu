@@ -202,6 +202,7 @@ protected:
 	int m_nDisplayMode;
 	int m_nRotate;
 	bool m_bFirstPageAlone;
+	bool m_bWidePageAlone;
 	bool m_bRightToLeft;
 
 	CDisplaySettings m_displaySettings;
@@ -219,6 +220,11 @@ protected:
 			if ((nRotate % 2) == 1)
 				swap(sz.cx, sz.cy);
 			return sz;
+		}
+
+		bool IsWide() const
+		{
+			return (LONG)(info.szPage.cx*0.9) > info.szPage.cy;
 		}
 
 		void Init(DjVuSource* pSource, int nPage, bool bNeedText = false, bool bNeedAnno = false)
