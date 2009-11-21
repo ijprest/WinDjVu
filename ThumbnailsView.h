@@ -103,10 +103,11 @@ protected:
 	void UpdateAllThumbnails();
 	void PrintSelectedPages();
 	void ExportSelectedPages();
+	void DeleteSelectedPages(bool bDeleted);
 
 	struct Page
 	{
-		Page() : pBitmap(NULL), bRendered(false), bSelected(false) {}
+		Page() : pBitmap(NULL), bRendered(false), bSelected(false), bIsDeleted(false) {}
 		~Page() { delete pBitmap; }
 
 		CRect rcDisplay, rcPage, rcBitmap, rcNumber;
@@ -114,6 +115,7 @@ protected:
 		CSize szBitmap, szDisplay;
 		bool bRendered;
 		bool bSelected;
+		bool bIsDeleted;
 
 		void DeleteBitmap()
 		{

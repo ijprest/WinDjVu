@@ -398,13 +398,14 @@
 #define ID_TOGGLE_NAV_PANE              33132
 #define ID_THUMBNAILS_PRINT             33133
 #define ID_THUMBNAILS_EXPORT            33134
+#define ID_THUMBNAILS_MARKDELETED				33135
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        325
-#define _APS_NEXT_COMMAND_VALUE         33135
+#define _APS_NEXT_COMMAND_VALUE         33136
 #define _APS_NEXT_CONTROL_VALUE         1109
 #define _APS_NEXT_SYMED_VALUE           117
 #endif

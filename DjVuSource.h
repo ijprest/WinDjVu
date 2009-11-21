@@ -251,6 +251,7 @@ public:
 	void RemoveFromCache(int nPage, Observer* observer);
 	void ChangeObservedPages(Observer* observer,
 			const vector<int>& add, const vector<int>& remove);
+	void DeletePage(int nPage, bool bDelete);
 
 	PageInfo GetPageInfo(int nPage, bool bNeedText = false, bool bNeedAnno = false);
 	bool IsPageCached(int nPage, Observer* observer);
@@ -283,10 +284,11 @@ protected:
 
 	struct PageData : public Observable
 	{
-		PageData() : hDecodingThread(NULL) {}
+		PageData() : hDecodingThread(NULL), bDeleted(false) {}
 
 		GP<DjVuImage> pImage;
 		PageInfo info;
+		bool bDeleted;
 
 		HANDLE hDecodingThread;
 		int nOrigThreadPriority;

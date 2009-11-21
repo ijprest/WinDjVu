@@ -346,6 +346,7 @@ protected:
 	static unsigned int __stdcall ExportThreadProc(void* pvData);
 	void ExportPages(const set<int>& pages);
 	void DoExportPage(int nPage, bool bCrop = false, GRect rect = GRect());
+	void DeletePages(const set<int>& pages, bool bDelete);
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;

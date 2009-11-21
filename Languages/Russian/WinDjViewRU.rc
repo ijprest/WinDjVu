@@ -353,6 +353,8 @@ BEGIN
         MENUITEM "&Печать страниц...",          ID_THUMBNAILS_PRINT
         MENUITEM "&Экспорт страниц...",         ID_THUMBNAILS_EXPORT
         MENUITEM SEPARATOR
+        MENUITEM "Mark &Deleted",               ID_THUMBNAILS_MARKDELETED
+        MENUITEM SEPARATOR
         MENUITEM "&Увеличить миниатюры",        ID_THUMBNAILS_ENLARGE
         MENUITEM "У&меньшить миниатюры",        ID_THUMBNAILS_REDUCE
     END

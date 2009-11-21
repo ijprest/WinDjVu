@@ -1229,6 +1229,13 @@ void DjVuSource::ChangeObservedPages(Observer* observer,
 	m_lock.Unlock();
 }
 
+void DjVuSource::DeletePage(int nPage, bool bDelete)
+{
+	ASSERT(nPage >= 0 && nPage < m_nPageCount);
+	PageData& data = m_pages[nPage];
+	data.bDeleted = bDelete;
+}
+
 int DjVuSource::GetPageFromId(const GUTF8String& strPageId) const
 {
 	if (m_pDjVuDoc == NULL)
@@ -1438,8 +1445,13 @@ bool DjVuSource::SaveAs(const CString& strFileName)
 		// Close open files for this url
 		DataPool::load_file(url);
 
-		if (!CopyFile(m_strFileName, strFileName, false))
-			return false;
+		GP<DjVuDocEditor> pNewDoc = DjVuDocEditor::create_wait(m_pDjVuDoc->get_init_url());
+		for (int nPage = m_nPageCount - 1; nPage >= 0; --nPage)
+		{
+			if (m_pages[nPage].bDeleted)
+				pNewDoc->remove_page(nPage);
+		}
+		pNewDoc->save_as(url, true);
 	}
 	catch (GException&)
 	{

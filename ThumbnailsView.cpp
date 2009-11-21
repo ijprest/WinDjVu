@@ -233,6 +233,18 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 			rcBorder.InflateRect(3, 3, 2, 2);
 	}
 
+	// Deleted highlight
+	if (page.bIsDeleted)
+	{
+		CBrush brushDeleted(HS_DIAGCROSS, RGB(255,0,0));
+		CBrush* pbrush = pDC->SelectObject(&brushDeleted);
+		pDC->SetBrushOrg(-ptScroll);
+		pDC->SetBkMode(TRANSPARENT);
+		CRect rect = page.rcBitmap - ptScroll;
+		pDC->Rectangle(&rect);
+		pDC->SelectObject(pbrush);
+	}
+
 	bool bFocus = (GetFocus() == this);
 
 	// Page number
@@ -574,8 +586,23 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 		pPopup->EnableMenuItem(ID_THUMBNAILS_ENLARGE, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	if (!HasSelection())
 	{
+		pPopup->EnableMenuItem(ID_THUMBNAILS_MARKDELETED, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 		pPopup->EnableMenuItem(ID_THUMBNAILS_PRINT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 		pPopup->EnableMenuItem(ID_THUMBNAILS_EXPORT, MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	}
+	else
+	{
+		bool bDeleted = false;
+		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		{
+			Page& page = m_pages[nPage];
+			if (page.bSelected && page.bIsDeleted)
+			{
+				bDeleted = true;
+				break;
+			}			
+		}
+		pPopup->CheckMenuItem(ID_THUMBNAILS_MARKDELETED, MF_BYCOMMAND | (bDeleted ? MF_CHECKED : MF_UNCHECKED));
 	}
 
 	int nID = ::TrackPopupMenuEx(pPopup->m_hMenu, TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD,
@@ -589,6 +616,8 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 		PrintSelectedPages();
 	else if (nID == ID_THUMBNAILS_EXPORT)
 		ExportSelectedPages();
+	else if (nID == ID_THUMBNAILS_MARKDELETED)
+		DeleteSelectedPages(!(pPopup->GetMenuState(ID_THUMBNAILS_MARKDELETED, MF_BYCOMMAND) & MF_CHECKED));
 
 	return 0;
 }
@@ -1077,4 +1106,19 @@ void CThumbnailsView::ExportSelectedPages()
 			selection.insert(nPage);
 
 	UpdateObservers(PageRangeMsg(EXPORT_PAGES, selection));
+}
+
+void CThumbnailsView::DeleteSelectedPages(bool bDeleted)
+{
+	set<int> selection;
+	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+	{
+		if (m_pages[nPage].bSelected)
+		{
+			m_pages[nPage].bIsDeleted = bDeleted;
+			InvalidatePage(nPage);
+			selection.insert(nPage);
+		}
+	}
+	UpdateObservers(PageRangeMsg(bDeleted ? DELETE_PAGES : UNDELETE_PAGES, selection));
 }

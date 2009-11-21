@@ -4606,6 +4606,12 @@ void CDjVuView::ExportPages(const set<int>& pages)
 	}
 }
 
+void CDjVuView::DeletePages(const set<int>& pages, bool bDelete)
+{
+	for (set<int>::const_iterator it = pages.begin(); it != pages.end(); ++it)
+		m_pSource->DeletePage(*it, bDelete);
+}
+
 void CDjVuView::OnUpdateExportSelection(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_nSelectionPage != -1);
@@ -6604,6 +6610,11 @@ void CDjVuView::OnUpdate(const Observable* source, const Message* message)
 	{
 		const PageRangeMsg* msg = (const PageRangeMsg*) message;
 		ExportPages(msg->pages);
+	}
+	else if (message->code == DELETE_PAGES || message->code == UNDELETE_PAGES)
+	{
+		const PageRangeMsg* msg = (const PageRangeMsg*) message;
+		DeletePages(msg->pages, message->code == DELETE_PAGES);
 	}
 }
 

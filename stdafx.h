@@ -101,6 +101,7 @@ using namespace std;
 #define LIBDJVU_STATIC
 
 #include "libdjvu/DjVuDocument.h"
+#include "libdjvu/DjVuDocEditor.h"
 #include "libdjvu/DjVuImage.h"
 #include "libdjvu/GBitmap.h"
 #include "libdjvu/GScaler.h"

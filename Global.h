@@ -158,6 +158,8 @@ inline CSize GetClientSize(const CWnd& wnd)
 #define BOOKMARKS_CHANGED 27
 #define PRINT_PAGES 28
 #define EXPORT_PAGES 29
+#define DELETE_PAGES 30
+#define UNDELETE_PAGES 31
 
 class CDIB;
 struct Bookmark;
