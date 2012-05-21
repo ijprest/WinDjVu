@@ -105,12 +105,16 @@ protected:
 	void LanguageChanged();
 	void OnViewActivated(const CDjVuView* pView);
 
+	void DoSave(LPCTSTR filename);
+
 	CFont m_font, m_boldFont;
 
-protected:
+public:
 	// Generated message map functions
 	afx_msg void OnWindowPosChanged(WINDOWPOS* lpwndpos);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnSave();
+	afx_msg void OnSaveCopyAs();
 	afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
 	afx_msg void OnViewToolbar();
 	afx_msg void OnViewTabBar();

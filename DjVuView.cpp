@@ -6264,6 +6264,8 @@ bool CDjVuView::HasFacingPage(int nPage) const
 
 	if(m_bWidePageAlone && m_pages[nPage].IsWide())
 		return false;
+	if(m_bWidePageAlone && nPage < m_nPageCount - 1 && m_pages[nPage+1].IsWide())
+		return false;
 	if (m_bFirstPageAlone)
 		return (nPage > 0 && nPage < m_nPageCount - 1);
 	else
@@ -6321,7 +6323,7 @@ int CDjVuView::GetNextPage(int nPage) const
 	ASSERT(IsValidPage(nPage));
 	if (m_bFirstPageAlone && nPage == 0)
 		return 1;
-	else if(m_bWidePageAlone && m_pages[nPage].IsWide())
+	else if(m_bWidePageAlone && (m_pages[nPage].IsWide() || (nPage < m_nPageCount-1 && m_pages[nPage+1].IsWide())))
 		return nPage + 1;
 	else
 		return nPage + 2;

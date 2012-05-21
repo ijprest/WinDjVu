@@ -40,7 +40,6 @@
 IMPLEMENT_DYNCREATE(CDjVuDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CDjVuDoc, CDocument)
-	ON_COMMAND(ID_FILE_SAVE_COPY_AS, OnSaveCopyAs)
 	ON_COMMAND(ID_FILE_EXPORT_TEXT, OnFileExportText)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_TEXT, OnUpdateFileExportText)
 	ON_COMMAND(ID_FILE_INSTALL, OnFileInstall)
@@ -69,6 +68,12 @@ CDjVuDoc::~CDjVuDoc()
 BOOL CDjVuDoc::OnNewDocument()
 {
 	return false;
+}
+
+BOOL CDjVuDoc::DoFileSave()
+{ 
+	GetDjVuView()->GetMainFrame()->OnSave(); 
+	return TRUE; 
 }
 
 BOOL CDjVuDoc::OnSaveDocument(LPCTSTR lpszPathName)
@@ -153,43 +158,6 @@ CDjVuView* CDjVuDoc::GetDjVuView()
 		return NULL;
 
 	return (CDjVuView*) GetNextView(pos);
-}
-
-void CDjVuDoc::OnSaveCopyAs()
-{
-	CString strFileName = GetTitle();
-
-	CMyFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
-		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
-		LoadString(IDS_DJVU_FILTER));
-
-	CString strTitle;
-	strTitle.LoadString(IDS_SAVE_COPY_AS);
-	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
-
-	UINT nResult = dlg.DoModal();
-	GetDjVuView()->SetFocus();
-	if (nResult != IDOK)
-		return;
-
-	CWaitCursor wait;
-	strFileName = dlg.GetPathName();
-
-	if (AfxComparePath(strFileName, m_pSource->GetFileName()))
-	{
-		AfxMessageBox(IDS_CANNOT_SAVE_TO_ORIG, MB_ICONERROR | MB_OK);
-		return;
-	}
-
-	try
-	{
-		if (!m_pSource->SaveAs(strFileName))
-			AfxMessageBox(IDS_SAVE_ERROR, MB_ICONERROR | MB_OK);
-	}
-	catch (...)
-	{
-		theApp.ReportFatalError();
-	}
 }
 
 void CDjVuDoc::OnFileExportText()

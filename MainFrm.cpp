@@ -30,6 +30,7 @@
 #include "MagnifyWnd.h"
 #include "MyDocTemplate.h"
 #include "FindDlg.h"
+#include "MyFileDialog.h"
 
 #include <dde.h>
 #include <afxole.h>
@@ -48,6 +49,8 @@ IMPLEMENT_DYNAMIC(CMainFrame, CFrameWnd)
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
 	ON_WM_ACTIVATE()
+	ON_COMMAND(ID_FILE_SAVE, OnSave)
+	ON_COMMAND(ID_FILE_SAVE_COPY_AS, OnSaveCopyAs)
 	ON_COMMAND(ID_VIEW_TOOLBAR, OnViewToolbar)
 	ON_COMMAND(ID_VIEW_TAB_BAR, OnViewTabBar)
 	ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
@@ -1839,4 +1842,77 @@ void CMainFrame::OnNcDestroy()
 
 	// call special post-cleanup routine
 	PostNcDestroy();
+}
+
+
+void CMainFrame::DoSave(LPCTSTR lpszFilename)
+{
+	CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
+	CString strFileName = lpszFilename;
+
+	bool bReplaceOriginal = false;
+	if (AfxComparePath(strFileName, pDoc->GetPathName()))
+	{
+		bReplaceOriginal = true;
+		strFileName += ".replace";
+	}
+
+	try
+	{
+		if (!pDoc->GetSource()->SaveAs(strFileName))
+			AfxMessageBox(IDS_SAVE_ERROR, MB_ICONERROR | MB_OK);
+		else if (bReplaceOriginal)
+		{
+			CString strOrigName = pDoc->GetPathName();
+			DjVuSource* pSource = pDoc->GetSource();
+			pSource->AddRef();
+			pDoc->OnCloseDocument();
+			while(!pSource->Unique())
+				Sleep(100);
+			pSource->Release();
+			if( !MoveFileEx(strFileName, strOrigName, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) )
+			{
+				AfxMessageBox(IDS_CANNOT_SAVE_TO_ORIG, MB_ICONERROR | MB_OK);
+				DeleteFile(strFileName);
+			}
+			theApp.OpenDocument(strOrigName, "#1");
+		}
+	}
+	catch (...)
+	{
+		theApp.ReportFatalError();
+	}
+}
+
+
+void CMainFrame::OnSave()
+{
+	CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
+	if(pDoc) DoSave(pDoc->GetPathName());
+}
+
+
+void CMainFrame::OnSaveCopyAs()
+{
+	CDjVuDoc* pDoc = (CDjVuDoc*)GetActiveDocument();
+	if(!pDoc) return;
+	CString strFileName = pDoc->GetPathName();
+
+	CMyFileDialog dlg(false, _T("djvu"), strFileName, OFN_OVERWRITEPROMPT |
+		OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST,
+		LoadString(IDS_DJVU_FILTER));
+
+	CString strTitle;
+	strTitle.LoadString(IDS_SAVE_COPY_AS);
+	dlg.m_ofn.lpstrTitle = strTitle.GetBuffer(0);
+
+	UINT nResult = dlg.DoModal();
+	GetActiveView()->SetFocus();
+	if (nResult != IDOK)
+		return;
+
+	CWaitCursor wait;
+	strFileName = dlg.GetPathName();
+
+	DoSave(strFileName);
 }

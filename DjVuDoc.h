@@ -38,6 +38,7 @@ public:
 
 // Overrides
 public:
+	virtual BOOL DoFileSave();
 	virtual BOOL OnNewDocument();
 	virtual void OnCloseDocument();
 	virtual void Serialize(CArchive& ar);
@@ -57,7 +58,6 @@ protected:
 	// Generated message map functions
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	afx_msg void OnSaveCopyAs();
 	afx_msg void OnFileExportText();
 	afx_msg void OnUpdateFileExportText(CCmdUI* pCmdUI);
 	afx_msg void OnFileInstall();

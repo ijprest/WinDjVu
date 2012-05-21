@@ -38,6 +38,11 @@ public:
 			delete this;
 	}
 
+	virtual bool Unique() 
+	{ 
+		return InterlockedExchangeAdd(&m_nRefCount, 0) == 1; 
+	}
+
 protected:
 	long m_nRefCount;
 };

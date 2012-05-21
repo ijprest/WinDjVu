@@ -205,7 +205,8 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "Save Copy &As...\tCtrl+S",    ID_FILE_SAVE_COPY_AS
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_COPY_AS
         MENUITEM "&Close\tCtrl+W",              ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "&Import Bookmarks...",        ID_FILE_IMPORT_BOOKMARKS
@@ -214,7 +215,7 @@ BEGIN
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM SEPARATOR
         MENUITEM "&Document Properties...",     ID_FILE_DOC_PROPERTIES
-        MENUITEM "&Settings...\tCtrl+,",        ID_FILE_SETTINGS
+        MENUITEM "Se&ttings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -397,7 +398,7 @@ BEGIN
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "T",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_FILE_SAVE_COPY_AS,   VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_OEM_COMMA,   ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_FIND_STRING,         VIRTKEY, NOINVERT
     "F",            ID_FOCUS_TO_LOOKUP,     VIRTKEY, SHIFT, CONTROL, NOINVERT
