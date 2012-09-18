@@ -1,6 +1,6 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView", "WinDjView.vcproj", "{0352355C-CC2D-4190-8BF8-F280F7382B8C}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView", "WinDjView.vcxproj", "{0352355C-CC2D-4190-8BF8-F280F7382B8C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDjView_wuu", "Languages\Chinese_Wu\WinDjView_wuu.vcproj", "{D3DB682C-8A2E-4D5F-8C0A-427AD13ECC44}"
 EndProject

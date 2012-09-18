@@ -1136,7 +1136,7 @@ GSetImpl<K>::GSetImpl(const Traits &traits)
 template<class K> GCONT HNode *
 GSetImpl<K>::get(const K &key) const
 { 
-  unsigned int hashcode = hash(key);
+  unsigned int hashcode = ::hash(key);
   for (SNode *s=(SNode*)hashnode(hashcode); s; s=(SNode*)(s->hprev))
     if (s->hashcode == hashcode && s->key == key) return s;
   return 0;
@@ -1209,7 +1209,7 @@ GMapImpl<K,TI>::get_or_create(const K &key)
 #endif
   new ((void*)&(n->key)) K  (key);
   new ((void*)&(n->val)) TI ();
-  n->hashcode = hash((const K&)(n->key));
+  n->hashcode = ::hash((const K&)(n->key));
   this->installnode(n);
   return n;
 }

@@ -893,10 +893,10 @@ void MD5::Append(const void *data, size_t len)
 	const unsigned char* p = (unsigned char*) data;
 	size_t left = len;
 	size_t offset = (state->count[0] >> 3) & 63;
-	DWORD nbits = len << 3;
+	DWORD nbits = (DWORD)len << 3;
 
 	// Update the message length
-	state->count[1] += len >> 29;
+	state->count[1] += (DWORD)len >> 29;
 	state->count[0] += nbits;
 	if (state->count[0] < nbits)
 		state->count[1]++;
