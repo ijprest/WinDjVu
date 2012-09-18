@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: ZPCodec.cpp,v 1.11 2007/03/25 20:48:35 leonb Exp $
-// $Name:  $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -69,6 +66,8 @@
 #include "ZPCodec.h"
 #include "ByteStream.h"
 #include "GException.h"
+
+#include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>

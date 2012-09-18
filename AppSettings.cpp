@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -15,8 +15,6 @@
 //	with this program; if not, write to the Free Software Foundation, Inc.,
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
-
-// $Id: AppSettings.cpp,v 1.46 2009/07/30 18:25:23 zhezherun Exp $
 
 #include "stdafx.h"
 #include "AppSettings.h"
@@ -50,6 +48,7 @@ CAppSettings::CAppSettings()
 	nDefaultZoomType = -3; // Fit page
 	fDefaultZoom = 100.0;
 	nDefaultLayout = 1; // Continuous
+	bFirstPageAlone = false;
 	nDefaultMode = 0; // Drag
 
 	bNavPaneHidden = false;
