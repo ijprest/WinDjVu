@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: GSmartPointer.cpp,v 1.26 2008/08/03 03:54:01 leonb Exp $
-// $Name:  $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -70,6 +67,7 @@
 // Our original implementation consisted of multiple classes.
 // <http://prdownloads.sourceforge.net/djvu/DjVu2_2b-src.tgz>.
 
+#include <stddef.h>
 #include <string.h>
 #if PARANOID_DEBUG
 # include <assert.h>

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2009 Andrew Zhezherun
+//	Copyright (C) 2004-2012 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -16,9 +16,10 @@
 //	51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //	http://www.gnu.org/copyleft/gpl.html
 
-// $Id: Scaling.h,v 1.4 2009/01/28 16:59:20 zhezherun Exp $
-
 #pragma once
 
 GP<GBitmap> RescalePnm(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight);
 GP<GPixmap> RescalePnm(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight);
+
+GP<GPixmap> RescalePnm_subpix(GP<GBitmap> pSrc, UINT nWidth, UINT nHeight);
+GP<GPixmap> RescalePnm_subpix(GP<GPixmap> pSrc, UINT nWidth, UINT nHeight);

@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: DjVuFileCache.cpp,v 1.10 2007/03/25 20:48:30 leonb Exp $
-// $Name:  $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -66,6 +63,7 @@
 #include "DjVuFileCache.h"
 #include "debug.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 
 

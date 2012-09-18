@@ -52,9 +52,6 @@
 //C- | TO ANY WARRANTY OF NON-INFRINGEMENT, OR ANY IMPLIED WARRANTY OF
 //C- | MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
 //C- +------------------------------------------------------------------
-// 
-// $Id: BSByteStream.cpp,v 1.9 2007/03/25 20:48:29 leonb Exp $
-// $Name:  $
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -65,6 +62,7 @@
 
 // - Author: Leon Bottou, 07/1998
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
