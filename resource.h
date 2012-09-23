@@ -295,6 +295,7 @@
 #define IDC_DEFAULT_VIEWER_STATUS       1107
 #define IDC_STATIC_LICENSE              1108
 #define IDC_SUBPIXEL_SCALING            1109
+#define IDC_TRANSPARENT_ZOOM            1110
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -403,7 +404,7 @@
 #define ID_TOGGLE_NAV_PANE              33132
 #define ID_THUMBNAILS_PRINT             33133
 #define ID_THUMBNAILS_EXPORT            33134
-#define ID_THUMBNAILS_MARKDELETED				33135
+#define ID_THUMBNAILS_MARKDELETED       33135
 
 // Next default values for new objects
 // 

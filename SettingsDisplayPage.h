@@ -35,6 +35,7 @@ public:
 	enum { IDD = IDD_SETTINGS_DISPLAY };
 	BOOL m_bHQColorScaling;
 	BOOL m_bSubpixelScaling;
+	BOOL m_bTransparentZoom;
 	BOOL m_bInvertColors;
 	BOOL m_bAdjustDisplay;
 	BOOL m_bAdjustPrinting;

@@ -123,7 +123,7 @@ void CMagnifyWnd::RepaintContents()
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 225;
+	bf.SourceConstantAlpha = theApp.GetDisplaySettings()->bTransparentZoom ? 225 : 255;
 	bf.AlphaFormat = 0;
 
 	m_pUpdateLayeredWindow(m_hWnd, NULL, &m_rcPos.TopLeft(), &m_rcPos.Size(),

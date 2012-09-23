@@ -70,6 +70,7 @@ const TCHAR* s_pszBrightness = _T("brightness");
 const TCHAR* s_pszContrast = _T("contrast");
 const TCHAR* s_pszScaleMethod = _T("hq-render-color");
 const TCHAR* s_pszScaleSubpix = _T("subpix-scale");
+const TCHAR* s_pszTransparentZoom = _T("transparent-zoom-window");
 const TCHAR* s_pszInvertColors = _T("invert");
 const TCHAR* s_pszUnits = _T("units");
 const TCHAR* s_pszThumbnailSize = _T("thumbnail-size");
@@ -681,6 +682,7 @@ void CDjViewApp::LoadSettings()
 
 	m_displaySettings.bScaleColorPnm = !!GetProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.bScaleColorPnm);
 	m_displaySettings.bScaleSubpix = !!GetProfileInt(s_pszDisplaySection, s_pszScaleSubpix, m_displaySettings.bScaleSubpix);
+	m_displaySettings.bTransparentZoom = !!GetProfileInt(s_pszDisplaySection, s_pszTransparentZoom, m_displaySettings.bTransparentZoom);
 	m_displaySettings.bInvertColors = !!GetProfileInt(s_pszDisplaySection, s_pszInvertColors, m_displaySettings.bInvertColors);
 	m_displaySettings.bAdjustDisplay = !!GetProfileInt(s_pszDisplaySection, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
 	m_displaySettings.fGamma = GetProfileDouble(s_pszDisplaySection, s_pszGamma, m_displaySettings.fGamma);
@@ -859,6 +861,7 @@ void CDjViewApp::SaveSettings()
 
 	WriteProfileInt(s_pszDisplaySection, s_pszScaleMethod, m_displaySettings.bScaleColorPnm);
 	WriteProfileInt(s_pszDisplaySection, s_pszScaleSubpix, m_displaySettings.bScaleSubpix);
+	WriteProfileInt(s_pszDisplaySection, s_pszTransparentZoom, m_displaySettings.bTransparentZoom);
 	WriteProfileInt(s_pszDisplaySection, s_pszInvertColors, m_displaySettings.bInvertColors);
 	WriteProfileInt(s_pszDisplaySection, s_pszAdjustDisplay, m_displaySettings.bAdjustDisplay);
 	WriteProfileDouble(s_pszDisplaySection, s_pszGamma, m_displaySettings.fGamma);

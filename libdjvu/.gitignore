@@ -6,3 +6,4 @@ ObjsU.dbg/
 Objs64.dbg/
 libdjvu*.lib
 vc90.pdb
+*.pdb

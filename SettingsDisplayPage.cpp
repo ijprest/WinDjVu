@@ -38,6 +38,7 @@ CSettingsDisplayPage::CSettingsDisplayPage()
 	m_bAdjustDisplay = m_displaySettings.bAdjustDisplay;
 	m_bHQColorScaling = m_displaySettings.bScaleColorPnm;
 	m_bSubpixelScaling = m_displaySettings.bScaleSubpix;
+	m_bTransparentZoom = m_displaySettings.bTransparentZoom;
 	m_bInvertColors = m_displaySettings.bInvertColors;
 
 	m_nBrightness = m_displaySettings.nBrightness + 100;
@@ -58,6 +59,7 @@ void CSettingsDisplayPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ADJUST_DISPLAY, m_bAdjustDisplay);
 	DDX_Check(pDX, IDC_HQ_COLOR_SCALING, m_bHQColorScaling);
 	DDX_Check(pDX, IDC_SUBPIXEL_SCALING, m_bSubpixelScaling);
+	DDX_Check(pDX, IDC_TRANSPARENT_ZOOM, m_bTransparentZoom);
 	DDX_Check(pDX, IDC_INVERT_COLORS, m_bInvertColors);
 	DDX_Check(pDX, IDC_ADJUST_PRINTING, m_bAdjustPrinting);
 
@@ -170,6 +172,7 @@ BOOL CSettingsDisplayPage::OnKillActive()
 	m_displaySettings.bAdjustDisplay = !!m_bAdjustDisplay;
 	m_displaySettings.bScaleColorPnm = !!m_bHQColorScaling;
 	m_displaySettings.bScaleSubpix = !!m_bSubpixelScaling;
+	m_displaySettings.bTransparentZoom = !!m_bTransparentZoom;
 	m_displaySettings.bInvertColors = !!m_bInvertColors;
 
 	m_displaySettings.nBrightness = m_nBrightness - 100;

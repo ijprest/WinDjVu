@@ -11,3 +11,4 @@ ipch/
 WinDjView.vcproj.*.user
 *.sdf
 *.vcxproj.user
+*.opensdf

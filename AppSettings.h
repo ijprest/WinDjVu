@@ -22,7 +22,7 @@ struct CDisplaySettings
 {
 	CDisplaySettings() :
 			bAdjustDisplay(false), nBrightness(0), nContrast(0),
-			fGamma(1.0), bScaleColorPnm(false), bScaleSubpix(false),
+			fGamma(1.0), bScaleColorPnm(false), bScaleSubpix(false), bTransparentZoom(true),
 			bInvertColors(false) {}
 
 	int GetBrightness() const { return bAdjustDisplay ? nBrightness : 0; }
@@ -41,7 +41,8 @@ struct CDisplaySettings
 	{
 		return GetBrightness() == rhs.GetBrightness() && GetContrast() == rhs.GetContrast()
 				&& GetGamma() == rhs.GetGamma() && bScaleColorPnm == rhs.bScaleColorPnm
-				&& bScaleSubpix == rhs.bScaleSubpix && bInvertColors == rhs.bInvertColors;
+				&& bScaleSubpix == rhs.bScaleSubpix && bTransparentZoom == rhs.bTransparentZoom 
+				&& bInvertColors == rhs.bInvertColors;
 	}
 
 	bool IsAdjusted() const
@@ -56,6 +57,7 @@ struct CDisplaySettings
 
 	bool bScaleColorPnm;
 	bool bScaleSubpix;
+	bool bTransparentZoom;
 	bool bInvertColors;
 };
 
