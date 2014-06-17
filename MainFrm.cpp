@@ -218,7 +218,7 @@ void CMainFrame::InitToolBar()
 	if (IsWinXPOrLater())
 	{
 		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(),
-				MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_BITMAP,
+				MAKEINTRESOURCE(IDR_TOOLBAR_MODERN), IMAGE_BITMAP,
 				0, 0, LR_CREATEDIBSECTION);
 		CBitmap bm;
 		bm.Attach(hbm);
@@ -279,7 +279,7 @@ void CMainFrame::InitDictBar()
 
 	if (IsWinXPOrLater())
 	{
-		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR),
+		HBITMAP hbm = (HBITMAP)::LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_DICT_BAR_MODERN),
 				IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
 		CBitmap bm;
 		bm.Attach(hbm);

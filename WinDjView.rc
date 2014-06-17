@@ -104,7 +104,8 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar_legacy.bmp"
+IDR_TOOLBAR_MODERN      BITMAP                  "res\\Toolbar.bmp"
 IDR_TOOLBAR_GRAYED      BITMAP                  "res\\Toolbar_grayed.bmp"
 IDR_TOOLBAR_LEGACY      BITMAP                  "res\\Toolbar_legacy.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
@@ -114,7 +115,8 @@ IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
 IDB_DONATE              BITMAP                  "res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
 IDB_HOURGLASS           BITMAP                  "res\\hourglass.bmp"
-IDR_DICT_BAR            BITMAP                  "res\\dictbar.bmp"
+IDR_DICT_BAR            BITMAP                  "res\\dictbar_legacy.bmp"
+IDR_DICT_BAR_MODERN     BITMAP                  "res\\dictbar.bmp"
 IDR_DICT_BAR_GRAYED     BITMAP                  "res\\dictbar_grayed.bmp"
 IDR_DICT_BAR_LEGACY     BITMAP                  "res\\dictbar_legacy.bmp"
 

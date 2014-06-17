@@ -181,6 +181,8 @@
 #define IDS_EXPORTING_PAGE              328
 #define IDS_EXPORT_PAGES                329
 #define IDS_EXPORT_ERRORS               330
+#define IDR_DICT_BAR_MODERN             331
+#define IDR_TOOLBAR_MODERN              332
 #define IDC_COMBO_PRINTER               1000
 #define IDC_COMBO_PAPER                 1001
 #define IDC_PRINT_TO_FILE               1002
