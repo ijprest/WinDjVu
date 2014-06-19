@@ -1573,8 +1573,8 @@ unsigned int __stdcall PrintThreadProc(void* pvData)
 			return 0;
 		}
 
-		int nPage = dlg.m_arrPages[i].first - 1;
-		int nSecondPage = dlg.m_arrPages[i].second - 1;
+		DisplayPageNumber nPage = dlg.m_arrPages[i].first - 1;
+		DisplayPageNumber nSecondPage = dlg.m_arrPages[i].second - 1;
 
 		if ((nPage < 0 || nPage >= pSource->GetPageCount()) &&
 				(!printSettings.bTwoPages || nSecondPage < 0 || nSecondPage >= pSource->GetPageCount()))

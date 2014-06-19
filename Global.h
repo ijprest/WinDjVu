@@ -163,25 +163,65 @@ inline CSize GetClientSize(const CWnd& wnd)
 #define EXPORT_PAGES 29
 #define DELETE_PAGES 30
 #define UNDELETE_PAGES 31
+#define MOVE_PAGES 32
 
 class CDIB;
 struct Bookmark;
 struct Annotation;
 
+template<bool REAL> 
+struct PageNumberT
+{
+	explicit PageNumberT(int nPage) : nPageNumber(nPage) {}
+	inline bool operator==(PageNumberT rhs) const { return nPageNumber == rhs.nPageNumber; }
+	inline bool operator==(int rhs) const { return nPageNumber == rhs; }
+	inline bool operator!=(PageNumberT rhs) const { return nPageNumber != rhs.nPageNumber; }
+	inline bool operator!=(int rhs) const { return nPageNumber != rhs; }
+	inline bool operator>(PageNumberT rhs) const { return nPageNumber > rhs.nPageNumber; }
+	inline bool operator>(int rhs) const { return nPageNumber > rhs; }
+	inline bool operator>=(PageNumberT rhs) const { return nPageNumber >= rhs.nPageNumber; }
+	inline bool operator>=(int rhs) const { return nPageNumber >= rhs; }
+	inline bool operator<(PageNumberT rhs) const { return nPageNumber < rhs.nPageNumber; }
+	inline bool operator<(int rhs) const { return nPageNumber < rhs; }
+	inline bool operator<=(PageNumberT rhs) const { return nPageNumber <= rhs.nPageNumber; }
+	inline bool operator<=(int rhs) const { return nPageNumber <= rhs; }
+
+	inline PageNumberT operator+(int rhs) const { return PageNumberT(nPageNumber + rhs); }
+	inline PageNumberT operator-(int rhs) const { return PageNumberT(nPageNumber - rhs); }
+
+	inline PageNumberT& operator++() { ++nPageNumber; return *this; }
+	inline PageNumberT operator++(int) { return PageNumberT(nPageNumber++); }
+	inline PageNumberT& operator--() { --nPageNumber; return *this; }
+	inline PageNumberT operator--(int) { return PageNumberT(nPageNumber--); }
+	inline bool valid() const { return nPageNumber >= 0; }
+
+	int real() const { return (enable_if<REAL,int>::type)nPageNumber; }
+	int display() const { return (enable_if<!REAL,int>::type)nPageNumber; }
+private:
+	long nPageNumber;
+
+	friend PageNumberT __cdecl InterlockedExchange(_Inout_ _Interlocked_operand_ PageNumberT volatile *Target, _In_ PageNumberT Value);
+	friend PageNumberT __cdecl InterlockedExchangeAdd(_Inout_ _Interlocked_operand_ PageNumberT volatile *Target, _In_ PageNumberT Value);
+};
+
+
+typedef PageNumberT<true> RealPageNumber;
+typedef PageNumberT<false> DisplayPageNumber;
+
 struct PageMsg : public Message
 {
-	PageMsg(int msg, int nPage_)
+	PageMsg(int msg, RealPageNumber nPage_)
 		: Message(msg), nPage(nPage_) {}
 
-	int nPage;
+	RealPageNumber nPage;
 };
 
 struct BitmapMsg : public Message
 {
-	BitmapMsg(int msg, int nPage_, CDIB* pDIB_)
+	BitmapMsg(int msg, RealPageNumber nPage_, CDIB* pDIB_)
 		: Message(msg), nPage(nPage_), pDIB(pDIB_) {}
 
-	int nPage;
+	RealPageNumber nPage;
 	CDIB* pDIB;
 };
 
@@ -195,10 +235,11 @@ struct LinkClicked : public Message
 
 struct SearchResultClicked : public Message
 {
-	SearchResultClicked(int nPage_, int nSelStart_, int nSelEnd_)
+	SearchResultClicked(DisplayPageNumber nPage_, int nSelStart_, int nSelEnd_)
 		: Message(SEARCH_RESULT_CLICKED), nPage(nPage_), nSelStart(nSelStart_), nSelEnd(nSelEnd_) {}
 
-	int nPage, nSelStart, nSelEnd;
+	DisplayPageNumber nPage;
+	int nSelStart, nSelEnd;
 };
 
 struct RotateChanged : public Message
@@ -211,11 +252,11 @@ struct RotateChanged : public Message
 
 struct AnnotationMsg : public Message
 {
-	AnnotationMsg(int msg, Annotation* pAnno_, int nPage_)
+	AnnotationMsg(int msg, Annotation* pAnno_, RealPageNumber nPage_)
 		: Message(msg), pAnno(pAnno_), nPage(nPage_) {}
 
 	Annotation* pAnno;
-	int nPage;
+	RealPageNumber nPage;
 };
 
 struct BookmarkMsg : public Message
@@ -245,10 +286,11 @@ struct TabMsg : public Message
 
 struct PageRangeMsg : public Message
 {
-	PageRangeMsg(int msg, const set<int>& pages_)
-		: Message(msg), pages(pages_) {}
+	PageRangeMsg(int msg, const set<DisplayPageNumber>& pages_, DisplayPageNumber index_ = DisplayPageNumber(-1))
+		: Message(msg), pages(pages_), index(index_) {}
 
-	const set<int>& pages;
+	const set<DisplayPageNumber>& pages;
+	DisplayPageNumber index;
 };
 
 
@@ -317,3 +359,23 @@ inline int GetTotalRotate(GP<DjVuImage> pImage, int nRotate)
 	GP<DjVuInfo> info = pImage->get_info();
 	return (nRotate + (info != NULL ? info->orientation : 0)) % 4;
 }
+
+template<typename C>
+void move_items_to(C& container, const set<DisplayPageNumber>& items, DisplayPageNumber target_pos)
+{
+	vector<C::value_type> temp;
+	temp.reserve(items.size());
+	for(auto i = items.rbegin(); i != items.rend(); ++i)
+	{
+		temp.emplace_back(move(container[i->display()]));
+		container.erase(container.begin() + i->display());
+	}
+	for(auto i = temp.begin(); i != temp.end(); ++i)
+	{
+		if(target_pos >= container.size())
+			container.emplace_back(move(*i));
+		else
+			container.emplace(container.begin() + target_pos.display(), move(*i));
+	}
+}
+

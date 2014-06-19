@@ -575,7 +575,7 @@ void CMainFrame::OnChangePage()
 	if (pView == NULL)
 		return;
 
-	int nPage = m_cboPage.GetCurSel();
+	DisplayPageNumber nPage = DisplayPageNumber(m_cboPage.GetCurSel());
 	if (nPage >= 0 && nPage < pView->GetPageCount())
 		pView->GoToPage(nPage);
 
@@ -595,7 +595,7 @@ void CMainFrame::OnChangePageEdit()
 	if (_stscanf(strPage, _T("%d"), &nPage) == 1)
 	{
 		if (nPage >= 1 && nPage <= pView->GetPageCount())
-			pView->GoToPage(nPage - 1);
+			pView->GoToPage(DisplayPageNumber(nPage - 1));
 	}
 
 	pView->SetFocus();
@@ -607,7 +607,7 @@ void CMainFrame::OnDropDownPage()
 	if (pView == NULL)
 		return;
 
-	int nPage = pView->GetCurrentPage();
+	DisplayPageNumber nPage = pView->GetCurrentPage();
 	if (pView->GetPageCount() > m_cboPage.GetCount())
 	{
 		m_cboPage.InitStorage(pView->GetPageCount() - m_cboPage.GetCount(), 10);
@@ -620,7 +620,7 @@ void CMainFrame::OnDropDownPage()
 			m_cboPage.DeleteString(i);
 	}
 
-	m_cboPage.SetCurSel(nPage);
+	m_cboPage.SetCurSel(nPage.display());
 }
 
 void CMainFrame::OnCancelChange()
@@ -676,8 +676,8 @@ void CMainFrame::UpdatePageCombo(const CDjVuView* pView)
 	if (pView == NULL)
 		return;
 
-	int nPage = pView->GetCurrentPage();
-	CString strPage = FormatString(_T("%d"), nPage + 1);
+	DisplayPageNumber nPage = pView->GetCurrentPage();
+	CString strPage = FormatString(_T("%d"), nPage.display() + 1);
 	CString strCurPage;
 	m_cboPage.GetWindowText(strCurPage);
 	if (strPage != strCurPage)
@@ -1244,7 +1244,7 @@ void CMainFrame::OnUpdateStatusSize(CCmdUI* pCmdUI)
 		return;
 	}
 
-	int nCurrentPage = pView->GetCurrentPage();
+	DisplayPageNumber nCurrentPage = pView->GetCurrentPage();
 
 	int nUnits = theApp.GetAppSettings()->nUnits;
 	double fUnitsPerInch = CAppSettings::unitsPerInch[nUnits];
@@ -1793,14 +1793,14 @@ void CMainFrame::OnMouseWheelPage(NMHDR* pNMHDR, LRESULT* pResult)
 	// there will be no scrolling at all.
 	CString strPage;
 	m_cboPage.GetWindowText(strPage);
-	int nPage = 0;
-	_stscanf(strPage, _T("%d"), &nPage);
+	int nPage_ = 0;
+	_stscanf(strPage, _T("%d"), &nPage_);
 
-	nPage = nPage - 1 + (pNMWheel->bUp ? -1 : 1);
+	DisplayPageNumber nPage(nPage_ - 1 + (pNMWheel->bUp ? -1 : 1));
 	if (nPage >= 0 && nPage < pView->GetPageCount())
 	{
 		pView->GoToPage(nPage);
-		CString strPage = FormatString(_T("%d"), nPage + 1);
+		CString strPage = FormatString(_T("%d"), nPage.display() + 1);
 		m_cboPage.SetWindowText(strPage);
 	}
 

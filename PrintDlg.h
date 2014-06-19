@@ -30,7 +30,7 @@ class CPrintDlg : public CMyDialog
 	DECLARE_DYNAMIC(CPrintDlg)
 
 public:
-	CPrintDlg(DjVuSource* pSource, int nPage, int nRotate, int nMode, CWnd* pParent = NULL);
+	CPrintDlg(DjVuSource* pSource, DisplayPageNumber nPage, int nRotate, int nMode, CWnd* pParent = NULL);
 	virtual ~CPrintDlg();
 
 // Dialog Data
@@ -72,7 +72,7 @@ public:
 	Paper* m_pPaper;
 	HANDLE m_hPrinter;
 
-	typedef vector<pair<int, int> > PageArr;
+	typedef vector<pair<DisplayPageNumber, DisplayPageNumber>> PageArr;
 	PageArr m_arrPages;
 
 	bool m_bHasSelection;
@@ -132,10 +132,10 @@ protected:
 	DjVuSource* m_pSource;
 	GP<DjVuImage> m_pCurPage, m_pNextPage;
 	bool m_bDrawPreview;
-	int m_nCurPage;
+	DisplayPageNumber m_nCurPage;
 	int m_nRotate;
 	int m_nMode;
-	vector<int> m_pages;
+	vector<DisplayPageNumber> m_pages;
 
 	static map<CString, vector<byte> > s_devModes;
 	static LPDEVMODE GetCachedDevMode(const CString& strPrinter);

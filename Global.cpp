@@ -123,49 +123,24 @@ void Observable::UpdateObservers(const Message& message)
 
 // Version
 
-struct VersionInfo
-{
-	VersionInfo();
-
-	bool bNT, b2kPlus, bXPPlus, bVistaPlus;
-};
-static VersionInfo theVersionInfo;
-
-VersionInfo::VersionInfo()
-	: bNT(false), b2kPlus(false), bXPPlus(false), bVistaPlus(false)
-{
-	OSVERSIONINFO vi;
-	vi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if (::GetVersionEx(&vi))
-	{
-		bNT = (vi.dwPlatformId == VER_PLATFORM_WIN32_NT);
-		if (bNT)
-		{
-			b2kPlus = (vi.dwMajorVersion >= 5);
-			bXPPlus = (vi.dwMajorVersion > 5 || vi.dwMajorVersion == 5 && vi.dwMinorVersion >= 1);
-			bVistaPlus = (vi.dwMajorVersion >= 6);
-		}
-	}
-}
-
 bool IsWinNT()
 {
-	return theVersionInfo.bNT;
+	return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_NT4), LOBYTE(_WIN32_WINNT_NT4), 0);
 }
 
 bool IsWin2kOrLater()
 {
-	return theVersionInfo.b2kPlus;
+	return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0);
 }
 
 bool IsWinXPOrLater()
 {
-	return theVersionInfo.bXPPlus;
+	return IsWindowsXPOrGreater();
 }
 
 bool IsWinVistaOrLater()
 {
-	return theVersionInfo.bVistaPlus;
+	return IsWindowsVistaOrGreater();
 }
 
 
@@ -1308,3 +1283,14 @@ string& Base64Decode(string& s)
 	s.swap(x);
 	return s;
 }
+
+PageNumberT<true> __cdecl InterlockedExchange(_Inout_ _Interlocked_operand_ PageNumberT<true> volatile *Target, _In_ PageNumberT<true> Value)
+{	return PageNumberT<true>(InterlockedExchange(&Target->nPageNumber, Value.nPageNumber)); }
+PageNumberT<true> __cdecl InterlockedExchangeAdd(_Inout_ _Interlocked_operand_ PageNumberT<true> volatile *Target, _In_ PageNumberT<true> Value)
+{	return PageNumberT<true>(InterlockedExchangeAdd(&Target->nPageNumber, Value.nPageNumber)); }
+
+PageNumberT<false> __cdecl InterlockedExchange(_Inout_ _Interlocked_operand_ PageNumberT<false> volatile *Target, _In_ PageNumberT<false> Value)
+{	return PageNumberT<false>(InterlockedExchange(&Target->nPageNumber, Value.nPageNumber)); }
+PageNumberT<false> __cdecl InterlockedExchangeAdd(_Inout_ _Interlocked_operand_ PageNumberT<false> volatile *Target, _In_ PageNumberT<false> Value)
+{	return PageNumberT<false>(InterlockedExchangeAdd(&Target->nPageNumber, Value.nPageNumber)); }
+

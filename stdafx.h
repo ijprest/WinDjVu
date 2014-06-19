@@ -73,6 +73,7 @@
 #include <afxmt.h>
 #include <afxpriv.h>
 #include <shlwapi.h>
+#include <VersionHelpers.h>
 
 #if (_MFC_VER > 0x0600)
 #include <../src/mfc/afximpl.h>
@@ -94,6 +95,7 @@
 #include <list>
 #include <map>
 #include <sstream>
+#include <memory>
 using namespace std;
 
 #define HAS_WCTYPE 1

@@ -35,8 +35,6 @@ CThumbnailsThread::CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool
 {
 	m_pSource->AddRef();
 
-	m_currentJob.nPage = -1;
-
 	UINT dwThreadId;
 	m_hThread = (HANDLE)_beginthreadex(NULL, 0, RenderThreadProc, this, 0, &dwThreadId);
 	::SetThreadPriority(m_hThread,
@@ -96,7 +94,7 @@ unsigned int __stdcall CThumbnailsThread::RenderThreadProc(void* pvData)
 
 		pThread->m_lock.Lock();
 		bool bNotify = (!pThread->m_bRejectCurrentJob);
-		pThread->m_currentJob.nPage = -1;
+		pThread->m_currentJob.nPage = RealPageNumber(-1);
 		if (!pThread->m_jobs.empty() && !pThread->IsPaused())
 			pThread->m_jobReady.SetEvent();
 		pThread->m_lock.Unlock();
@@ -183,7 +181,7 @@ CDIB* CThumbnailsThread::Render(Job& job)
 	return pBitmap;
 }
 
-void CThumbnailsThread::AddJob(int nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings)
+void CThumbnailsThread::AddJob(RealPageNumber nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings)
 {
 	Job job;
 	job.nPage = nPage;
@@ -212,7 +210,7 @@ void CThumbnailsThread::AddJob(int nPage, int nRotate, const CSize& size, const 
 void CThumbnailsThread::RejectCurrentJob()
 {
 	m_lock.Lock();
-	if (m_currentJob.nPage != -1)
+	if (m_currentJob.nPage != RealPageNumber(-1))
 		m_bRejectCurrentJob = true;
 	m_lock.Unlock();
 }

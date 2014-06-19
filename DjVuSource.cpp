@@ -545,7 +545,9 @@ void Bookmark::Load(const XMLNode& node)
 	}
 	else if (nLinkType == Page || nLinkType == View)
 	{
-		node.GetIntAttribute(pszAttrPage, nPage);
+		int nPage_;
+		node.GetIntAttribute(pszAttrPage, nPage_);
+		nPage = RealPageNumber(nPage_);
 		if (nLinkType == View)
 		{
 			node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
@@ -626,17 +628,17 @@ GUTF8String DocSettings::GetXML(bool skip_view_settings) const
 		result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagBookmarks));
 	}
 
-	map<int, PageSettings>::const_iterator it;
+	map<RealPageNumber, PageSettings>::const_iterator it;
 	for (it = pageSettings.begin(); it != pageSettings.end(); ++it)
 	{
-		int nPage = (*it).first + 1;
+		RealPageNumber nPage = (*it).first + 1;
 		const PageSettings& settings = (*it).second;
 
 		GUTF8String strPageXML = settings.GetXML();
 		if (strPageXML.length() != 0)
 		{
 			result += MakeUTF8String(FormatString(_T("<%s %s=\"%d\" >\n"),
-					pszTagPageSettings, pszAttrNumber, nPage));
+					pszTagPageSettings, pszAttrNumber, nPage.real()));
 			result += strPageXML;
 			result += MakeUTF8String(FormatString(_T("</%s>\n"), pszTagPageSettings));
 		}
@@ -658,7 +660,9 @@ void DocSettings::Load(const XMLNode& node)
 
 	if (strTagName == pszTagSettings)
 	{
-		node.GetIntAttribute(pszAttrStartPage, nPage);
+		int nPage_ = -1;
+		node.GetIntAttribute(pszAttrStartPage, nPage_);
+		nPage = RealPageNumber(nPage_);
 		node.GetLongAttribute(pszAttrOffsetX, ptOffset.x);
 		node.GetLongAttribute(pszAttrOffsetY, ptOffset.y);
 		node.GetIntAttribute(pszAttrZoomType, nZoomType);
@@ -694,7 +698,7 @@ void DocSettings::Load(const XMLNode& node)
 			if (!child.GetIntAttribute(pszAttrNumber, pageNo))
 				continue;
 
-			PageSettings& data = pageSettings[pageNo - 1];
+			PageSettings& data = pageSettings[RealPageNumber(pageNo - 1)];
 			data.Load(child);
 		}
 		else if (MakeCString(child.tagName) == pszTagBookmarks)
@@ -714,7 +718,7 @@ void DocSettings::Load(const XMLNode& node)
 	}
 }
 
-Annotation* DocSettings::AddAnnotation(const Annotation& anno, int nPage)
+Annotation* DocSettings::AddAnnotation(const Annotation& anno, RealPageNumber nPage)
 {
 	PageSettings& settings = pageSettings[nPage];
 	settings.anno.push_back(anno);
@@ -747,7 +751,7 @@ bool DocSettings::DeleteBookmark(const Bookmark* pBookmark)
 	return false;
 }
 
-bool DocSettings::DeleteAnnotation(const Annotation* pAnno, int nPage)
+bool DocSettings::DeleteAnnotation(const Annotation* pAnno, RealPageNumber nPage)
 {
 	PageSettings& settings = pageSettings[nPage];
 	list<Annotation>::iterator it;
@@ -912,8 +916,10 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 	m_nPageCount = m_pDjVuDoc->get_pages_num();
 	ASSERT(m_nPageCount > 0);
 
-	m_pages.clear();
-	m_pages.resize(m_nPageCount);
+	m_pages_.clear();
+	m_pages_.resize(m_nPageCount);
+	for(int i = 0; i < m_nPageCount; ++i)
+		m_pages_[i] = make_unique<PageData>(i);
 
 	if (pApplication != NULL)
 	{
@@ -921,7 +927,7 @@ DjVuSource::DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSet
 			m_dictInfo.bInstalled = true;
 	}
 
-	PageInfo info = GetPageInfo(0, false, true);
+	PageInfo info = GetPageInfo(DisplayPageNumber(0), false, true);
 	if (info.pAnt != NULL)
 	{
 		m_dictInfo.ReadPageIndex(info.pAnt->metadata[pszPageIndexKey]);
@@ -1017,10 +1023,10 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 		pApplication->LoadDocSettings(digest.ToString(), pSettings);
 
 		// Remove annotations for non-existing pages.
-		map<int, PageSettings>::iterator it;
+		map<RealPageNumber, PageSettings>::iterator it;
 		for (it = pSettings->pageSettings.begin(); it != pSettings->pageSettings.end();)
 		{
-			int nPage = it->first;
+			RealPageNumber nPage = it->first;
 			if (nPage < 0 || nPage >= pDoc->get_pages_num())
 				pSettings->pageSettings.erase(it++);
 			else
@@ -1035,10 +1041,10 @@ DjVuSource* DjVuSource::FromFile(const CString& strFileName)
 	return pSource;
 }
 
-bool DjVuSource::IsPageCached(int nPage, Observer* observer)
+bool DjVuSource::IsPageCached(DisplayPageNumber nPage, Observer* observer)
 {
 	ASSERT(nPage >= 0 && nPage < m_pDjVuDoc->get_pages_num());
-	const PageData& data = m_pages[nPage];
+	const PageData& data = Pages(nPage);
 
 	m_lock.Lock();
 	bool bCached = (data.pImage != NULL
@@ -1048,10 +1054,15 @@ bool DjVuSource::IsPageCached(int nPage, Observer* observer)
 	return bCached;
 }
 
-GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
+GP<DjVuImage> DjVuSource::GetPage(RealPageNumber nPage, Observer* observer)
+{
+	return GetPage(RealPageToDisplayPage(nPage), observer);
+}
+
+GP<DjVuImage> DjVuSource::GetPage(DisplayPageNumber nPage, Observer* observer)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
-	PageData& data = m_pages[nPage];
+	PageData& data = Pages(nPage);
 
 	m_lock.Lock();
 	GP<DjVuImage> pImage = data.pImage;
@@ -1111,7 +1122,7 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 
 	try
 	{
-		GP<DjVuFile> file = m_pDjVuDoc->get_djvu_file(nPage);
+		GP<DjVuFile> file = m_pDjVuDoc->get_djvu_file(DisplayPageToRealPage(nPage).real());
 		if (file)
 		{
 			pImage = DjVuImage::create(file);
@@ -1163,10 +1174,15 @@ GP<DjVuImage> DjVuSource::GetPage(int nPage, Observer* observer)
 	return pImage;
 }
 
-PageInfo DjVuSource::GetPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
+PageInfo DjVuSource::GetPageInfo(RealPageNumber nPage, bool bNeedText, bool bNeedAnno)
+{
+	return GetPageInfo(RealPageToDisplayPage(nPage), bNeedText, bNeedAnno);
+}
+
+PageInfo DjVuSource::GetPageInfo(DisplayPageNumber nPage, bool bNeedText, bool bNeedAnno)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
-	PageData& data = m_pages[nPage];
+	PageData& data = Pages(nPage);
 
 	m_lock.Lock();
 
@@ -1191,18 +1207,23 @@ PageInfo DjVuSource::GetPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
 	return info;
 }
 
-void DjVuSource::RemoveFromCache(int nPage, Observer* observer)
+void DjVuSource::RemoveFromCache(RealPageNumber nPage, Observer* observer)
+{
+	RemoveFromCache(RealPageToDisplayPage(nPage), observer);
+}
+
+void DjVuSource::RemoveFromCache(DisplayPageNumber nPage, Observer* observer)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
-	PageData& data = m_pages[nPage];
+	PageData& data = Pages(nPage);
 	GP<DjVuImage> pImage = NULL;
 
 	m_lock.Lock();
 	data.RemoveObserver(observer);
 	if (!data.HasObservers())
 	{
-		pImage = m_pages[nPage].pImage;
-		m_pages[nPage].pImage = NULL;
+		pImage = Pages(nPage).pImage;
+		Pages(nPage).pImage = NULL;
 	}
 	m_lock.Unlock();
 
@@ -1211,35 +1232,40 @@ void DjVuSource::RemoveFromCache(int nPage, Observer* observer)
 }
 
 void DjVuSource::ChangeObservedPages(Observer* observer,
-		const vector<int>& add, const vector<int>& remove)
+		const vector<DisplayPageNumber>& add, const vector<DisplayPageNumber>& remove)
 {
 	m_lock.Lock();
 	for (size_t i = 0; i < add.size(); ++i)
 	{
 		ASSERT(add[i] >= 0 && add[i] < m_nPageCount);
-		m_pages[add[i]].AddObserver(observer);
+		Pages(add[i]).AddObserver(observer);
 	}
 	for (size_t j = 0; j < remove.size(); ++j)
 	{
 		ASSERT(remove[j] >= 0 && remove[j] < m_nPageCount);
-		m_pages[remove[j]].RemoveObserver(observer);
+		Pages(remove[j]).RemoveObserver(observer);
 	}
 	m_lock.Unlock();
 }
 
-void DjVuSource::DeletePage(int nPage, bool bDelete)
+void DjVuSource::DeletePage(DisplayPageNumber nPage, bool bDelete)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
-	PageData& data = m_pages[nPage];
+	PageData& data = Pages(nPage);
 	data.bDeleted = bDelete;
 }
 
-int DjVuSource::GetPageFromId(const GUTF8String& strPageId) const
+void DjVuSource::MovePages(const set<DisplayPageNumber>& pages, DisplayPageNumber nIndex)
+{
+	move_items_to(m_pages_, pages, nIndex);
+}
+
+RealPageNumber DjVuSource::GetPageFromId(const GUTF8String& strPageId) const
 {
 	if (m_pDjVuDoc == NULL)
-		return -1;
+		return RealPageNumber(-1);
 	
-	return m_pDjVuDoc->id_to_page(strPageId);
+	return RealPageNumber(m_pDjVuDoc->id_to_page(strPageId));
 }
 
 void DjVuSource::ReadAnnotations(GP<ByteStream> pInclStream,
@@ -1303,7 +1329,7 @@ void DjVuSource::ReadAnnotations(GP<ByteStream> pInclStream,
 	}
 }
 
-PageInfo DjVuSource::ReadPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
+PageInfo DjVuSource::ReadPageInfo(DisplayPageNumber nPage, bool bNeedText, bool bNeedAnno)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 	PageInfo pageInfo;
@@ -1325,7 +1351,7 @@ PageInfo DjVuSource::ReadPageInfo(int nPage, bool bNeedText, bool bNeedAnno)
 		// Get raw data from the document and decode only requested chunks
 		// DjVuFile is not used to ensure that we do not wait for a lock
 		// to be released and thus do not block the UI thread
-		GURL url = m_pDjVuDoc->page_to_url(nPage);
+		GURL url = m_pDjVuDoc->page_to_url(DisplayPageToRealPage(nPage).real());
 		GP<DataPool> pool = m_pDjVuDoc->request_data(NULL, url);
 		GP<ByteStream> stream = pool->get_stream();
 		GP<IFFByteStream> iff(IFFByteStream::create(stream));
@@ -1444,10 +1470,10 @@ bool DjVuSource::SaveAs(const CString& strFileName)
 		DataPool::load_file(url);
 
 		GP<DjVuDocEditor> pNewDoc = DjVuDocEditor::create_wait(m_pDjVuDoc->get_init_url());
-		for (int nPage = m_nPageCount - 1; nPage >= 0; --nPage)
+		for (DisplayPageNumber nPage(m_nPageCount - 1); nPage >= 0; --nPage)
 		{
-			if (m_pages[nPage].bDeleted)
-				pNewDoc->remove_page(nPage);
+			if (Pages(nPage).bDeleted)
+				pNewDoc->remove_page(nPage.display()); //TODO//
 		}
 		pNewDoc->save_as(url, true);
 	}
@@ -1473,3 +1499,16 @@ void DjVuSource::UpdateDictionaries()
 	}
 	openDocumentsLock.Unlock();
 }
+
+DisplayPageNumber DjVuSource::RealPageToDisplayPage(RealPageNumber nPage)
+{
+	auto it = find_if(m_pages_.begin(), m_pages_.end(), [&](const unique_ptr<PageData>& page) -> bool { return page->nRealPageNum == nPage; });
+	ASSERT(it != m_pages_.end());
+	return DisplayPageNumber(it - m_pages_.begin());
+}
+
+RealPageNumber DjVuSource::DisplayPageToRealPage(DisplayPageNumber nPage)
+{
+	return m_pages_[nPage.display()]->nRealPageNum;
+}
+

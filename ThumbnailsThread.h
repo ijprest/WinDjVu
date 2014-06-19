@@ -31,7 +31,7 @@ public:
 	CThumbnailsThread(DjVuSource* pSource, Observer* pOwner, bool bIdle = false);
 	void Stop();
 
-	void AddJob(int nPage, int nRotate, const CSize& size,
+	void AddJob(RealPageNumber nPage, int nRotate, const CSize& size,
 			const CDisplaySettings& displaySettings);
 	void RemoveAllJobs();
 
@@ -53,7 +53,8 @@ private:
 
 	struct Job
 	{
-		int nPage;
+		Job() : nPage(-1) {}
+		RealPageNumber nPage;
 		int nRotate;
 		CSize size;
 		CDisplaySettings displaySettings;

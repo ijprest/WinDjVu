@@ -30,11 +30,11 @@ public:
 	CRenderThread(DjVuSource* pSource, Observer* pOwner);
 	void Stop();
 
-	void AddJob(int nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings,
+	void AddJob(RealPageNumber nPage, int nRotate, const CSize& size, const CDisplaySettings& displaySettings,
 		int nDisplayMode = CDjVuView::Color);
-	void AddDecodeJob(int nPage);
-	void AddReadInfoJob(int nPage);
-	void AddCleanupJob(int nPage);
+	void AddDecodeJob(RealPageNumber nPage);
+	void AddReadInfoJob(RealPageNumber nPage);
+	void AddCleanupJob(RealPageNumber nPage);
 	void RemoveAllJobs();
 
 	static CDIB* Render(GP<DjVuImage> pImage, const CSize& size,
@@ -61,7 +61,8 @@ private:
 
 	struct Job
 	{
-		int nPage;
+		Job() : nPage(-1) {}
+		RealPageNumber nPage;
 		int nRotate;
 		int nDisplayMode;
 		CDisplaySettings displaySettings;
@@ -76,6 +77,6 @@ private:
 	static unsigned int __stdcall RenderThreadProc(void* pvData);
 	CDIB* Render(Job& job);
 	void AddJob(const Job& job);
-	void RemoveFromQueue(int nPage);
+	void RemoveFromQueue(RealPageNumber nPage);
 	~CRenderThread();
 };

@@ -37,7 +37,6 @@ CRenderThread::CRenderThread(DjVuSource* pSource, Observer* pOwner)
 {
 	m_pSource->AddRef();
 
-	m_currentJob.nPage = -1;
 	m_pages.resize(m_pSource->GetPageCount(), m_jobs.end());
 
 	UINT dwThreadId;
@@ -90,7 +89,7 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 		pThread->m_bRejectCurrentJob = false;
 		pThread->m_currentJob = job;
 		pThread->m_jobs.pop_front();
-		pThread->m_pages[job.nPage] = pThread->m_jobs.end();
+		pThread->m_pages[job.nPage.real()] = pThread->m_jobs.end();
 		pThread->m_lock.Unlock();
 
 		CDIB* pBitmap = NULL;
@@ -119,7 +118,7 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 
 		pThread->m_lock.Lock();
 		bool bNotify = (!pThread->m_bRejectCurrentJob);
-		pThread->m_currentJob.nPage = -1;
+		pThread->m_currentJob.nPage = RealPageNumber(-1);
 		if (!pThread->m_jobs.empty() && !pThread->IsPaused())
 			pThread->m_jobReady.SetEvent();
 		pThread->m_lock.Unlock();
@@ -153,7 +152,7 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 	pThread->m_stopping.Unlock();
 
 	// Clean page cache
-	for (int nPage = 0; nPage < pThread->m_pSource->GetPageCount(); ++nPage)
+	for (DisplayPageNumber nPage(0); nPage < pThread->m_pSource->GetPageCount(); ++nPage)
 		pThread->m_pSource->RemoveFromCache(nPage, pThread->m_pOwner);
 
 	delete pThread;
@@ -182,14 +181,14 @@ bool CRenderThread::IsPaused()
 	return (InterlockedExchangeAdd(&m_nPaused, 0) == 1);
 }
 
-void CRenderThread::RemoveFromQueue(int nPage)
+void CRenderThread::RemoveFromQueue(RealPageNumber nPage)
 {
 	// Delete jobs with the same nPage
-	list<Job>::iterator it = m_pages[nPage];
+	list<Job>::iterator it = m_pages[nPage.real()];
 	if (it != m_jobs.end())
 	{
 		m_jobs.erase(it);
-		m_pages[nPage] = m_jobs.end();
+		m_pages[nPage.real()] = m_jobs.end();
 	}
 }
 
@@ -371,7 +370,7 @@ CDIB* CRenderThread::Render(GP<DjVuImage> pImage, const CSize& size,
 	return pBitmap;
 }
 
-void CRenderThread::AddJob(int nPage, int nRotate, const CSize& size,
+void CRenderThread::AddJob(RealPageNumber nPage, int nRotate, const CSize& size,
 		const CDisplaySettings& displaySettings, int nDisplayMode)
 {
 	Job job;
@@ -385,7 +384,7 @@ void CRenderThread::AddJob(int nPage, int nRotate, const CSize& size,
 	AddJob(job);
 }
 
-void CRenderThread::AddDecodeJob(int nPage)
+void CRenderThread::AddDecodeJob(RealPageNumber nPage)
 {
 	Job job;
 	job.nPage = nPage;
@@ -394,7 +393,7 @@ void CRenderThread::AddDecodeJob(int nPage)
 	AddJob(job);
 }
 
-void CRenderThread::AddReadInfoJob(int nPage)
+void CRenderThread::AddReadInfoJob(RealPageNumber nPage)
 {
 	Job job;
 	job.nPage = nPage;
@@ -403,7 +402,7 @@ void CRenderThread::AddReadInfoJob(int nPage)
 	AddJob(job);
 }
 
-void CRenderThread::AddCleanupJob(int nPage)
+void CRenderThread::AddCleanupJob(RealPageNumber nPage)
 {
 	Job job;
 	job.nPage = nPage;
@@ -428,7 +427,7 @@ void CRenderThread::AddJob(const Job& job)
 	RemoveFromQueue(job.nPage);
 
 	m_jobs.push_front(job);
-	m_pages[job.nPage] = m_jobs.begin();
+	m_pages[job.nPage.real()] = m_jobs.begin();
 
 	if (!IsPaused())
 		m_jobReady.SetEvent();
@@ -449,7 +448,7 @@ void CRenderThread::RemoveAllJobs()
 void CRenderThread::RejectCurrentJob()
 {
 	m_lock.Lock();
-	if (m_currentJob.nPage != -1)
+	if (m_currentJob.nPage != RealPageNumber(-1))
 		m_bRejectCurrentJob = true;
 	m_lock.Unlock();
 }

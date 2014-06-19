@@ -409,10 +409,10 @@ void CDjVuDoc::OnFileImportBookmarks()
 	DocSettings settings;
 	settings.Load(*parser.GetRoot());
 	// Remove annotations for non-existing pages.
-	map<int, PageSettings>::iterator it;
+	map<RealPageNumber, PageSettings>::iterator it;
 	for (it = settings.pageSettings.begin(); it != settings.pageSettings.end();)
 	{
-		int nPage = it->first;
+		RealPageNumber nPage = it->first;
 		if (nPage < 0 || nPage >= m_pSource->GetPageCount())
 			settings.pageSettings.erase(it++);
 		else
@@ -426,7 +426,7 @@ void CDjVuDoc::OnFileImportBookmarks()
 	}
 
 	list<Bookmark> tmpBookmarks;
-	map<int, PageSettings> tmpPageSettings;
+	map<RealPageNumber, PageSettings> tmpPageSettings;
 
 	if (!settings.bookmarks.empty() && !m_pSource->GetSettings()->bookmarks.empty()
 			|| !settings.pageSettings.empty() && !m_pSource->GetSettings()->pageSettings.empty())
@@ -451,7 +451,7 @@ void CDjVuDoc::OnFileImportBookmarks()
 			settings.bookmarks.begin(), settings.bookmarks.end());
 	for (it = settings.pageSettings.begin(); it != settings.pageSettings.end(); ++it)
 	{
-		int nPage = it->first;
+		RealPageNumber nPage = it->first;
 		if (nPage < 0 || nPage >= m_pSource->GetPageCount())
 			continue;
 

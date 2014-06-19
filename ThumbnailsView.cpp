@@ -39,6 +39,7 @@ const int nNumberSkip = 2;
 const int nNumberHeight = 15;
 const int nNumberWidth = 34;
 
+const int nDragTimer = 100;
 
 // CThumbnailsView
 
@@ -52,7 +53,10 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_WM_SETFOCUS()
 	ON_WM_KILLFOCUS()
 	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_RBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_WM_SETCURSOR()
 	ON_WM_DESTROY()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_MOUSEACTIVATE()
@@ -62,6 +66,9 @@ BEGIN_MESSAGE_MAP(CThumbnailsView, CMyScrollView)
 	ON_MESSAGE(WM_SHOWPARENT, OnShowParent)
 	ON_WM_MENUSELECT()
 	ON_WM_ENTERIDLE()
+	ON_WM_TIMER()
+	ON_WM_CAPTURECHANGED()
+	ON_WM_GETDLGCODE()
 END_MESSAGE_MAP()
 
 // CThumbnailsView construction/destruction
@@ -69,7 +76,8 @@ END_MESSAGE_MAP()
 CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 	: m_bInsideUpdateLayout(false), m_nPageCount(0), m_bVisible(false),
 	  m_pThread(NULL), m_pIdleThread(NULL), m_nActivePage(-1), m_pSource(pSource),
-	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1), m_bInitialized(false)
+	  m_nCurrentPage(-1), m_nRotate(0), m_nPagesInRow(1), m_bInitialized(false),
+		m_bDragging(false), m_bDragDetect(false), m_nInsertMarker(-1)
 {
 	m_pSource->AddRef();
 
@@ -90,8 +98,8 @@ CThumbnailsView::CThumbnailsView(DjVuSource* pSource)
 
 CThumbnailsView::~CThumbnailsView()
 {
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		m_pages[nPage].DeleteBitmap();
+	for (int i = 0; i < m_nPageCount; ++i)
+		m_pages_[i]->DeleteBitmap();
 
 	m_dataLock.Lock();
 
@@ -113,9 +121,9 @@ void CThumbnailsView::OnDraw(CDC* pDC)
 	pDC->GetClipBox(rcClip);
 	rcClip.OffsetRect(GetScrollPosition());
 
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
 	{
-		Page& page = m_pages[nPage];
+		Page& page = Pages(nPage);
 
 		if (page.rcDisplay.top < rcClip.bottom &&
 			page.rcDisplay.bottom > rcClip.top)
@@ -123,11 +131,37 @@ void CThumbnailsView::OnDraw(CDC* pDC)
 			DrawPage(pDC, nPage);
 		}
 	}
+
+	// Draw the insert marker
+	if(m_nInsertMarker >= 0 && m_nInsertMarker < m_nPageCount)
+	{
+		Page& page = Pages(m_nInsertMarker);
+		CRect rcMarker = page.rcPage;
+		rcMarker.right = rcMarker.left + 3;
+		rcMarker.OffsetRect(-8, 0);
+		rcMarker.OffsetRect(-GetScrollPosition());
+		rcMarker.InflateRect(0, 4);
+		pDC->FillSolidRect(&rcMarker, RGB(0,0,0));
+		pDC->FillSolidRect(rcMarker.left-3, rcMarker.top, 9, 3, RGB(0,0,0));
+		pDC->FillSolidRect(rcMarker.left-3, rcMarker.bottom-3, 9, 3, RGB(0,0,0));
+	}
+	else if(m_nInsertMarker == m_nPageCount)
+	{
+		Page& page = Pages(DisplayPageNumber(m_nPageCount-1));
+		CRect rcMarker = page.rcPage;
+		rcMarker.left = rcMarker.right - 3;
+		rcMarker.OffsetRect(8, 0);
+		rcMarker.OffsetRect(-GetScrollPosition());
+		rcMarker.InflateRect(0, 4);
+		pDC->FillSolidRect(&rcMarker, RGB(0,0,0));
+		pDC->FillSolidRect(rcMarker.left-3, rcMarker.top, 9, 3, RGB(0,0,0));
+		pDC->FillSolidRect(rcMarker.left-3, rcMarker.bottom-3, 9, 3, RGB(0,0,0));
+	}
 }
 
-void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
+void CThumbnailsView::DrawPage(CDC* pDC, DisplayPageNumber nPage)
 {
-	Page& page = m_pages[nPage];
+	Page& page = Pages(nPage);
 
 	COLORREF clrWindow = ::GetSysColor(COLOR_WINDOW);
 	COLORREF clrWindowText = ::GetSysColor(COLOR_WINDOWTEXT);
@@ -257,7 +291,7 @@ void CThumbnailsView::DrawPage(CDC* pDC, int nPage)
 	CFont* pOldFont = pDC->SelectObject(&m_font);
 	pDC->SetBkMode(TRANSPARENT);
 	pDC->SetTextColor(clrWindowText);
-	pDC->DrawText(FormatString(_T("%d"), nPage + 1), rcNumber - ptScroll,
+	pDC->DrawText(FormatString(_T("%d"), nPage.display() + 1), rcNumber - ptScroll,
 		DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	pDC->SelectObject(pOldFont);
 
@@ -308,7 +342,9 @@ void CThumbnailsView::OnInitialUpdate()
 	theApp.AddObserver(this);
 
 	m_nPageCount = m_pSource->GetPageCount();
-	m_pages.resize(m_nPageCount);
+	m_pages_.resize(m_nPageCount);
+	for(int i = 0; i < m_nPageCount; ++i)
+		m_pages_[i] = make_unique<Page>(i);
 
 	m_displaySettings = *theApp.GetDisplaySettings();
 	m_displaySettings.bScaleColorPnm = false;
@@ -347,45 +383,53 @@ void CThumbnailsView::OnSize(UINT nType, int cx, int cy)
 	CMyScrollView::OnSize(nType, cx, cy);
 }
 
+BOOL CThumbnailsView::PreTranslateMessage(MSG* pMsg)
+{
+	if(pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
+	{
+		if(m_bDragDetect || m_bDragging)
+			CancelDrag();
+	}
+	return CMyScrollView::PreTranslateMessage(pMsg);
+}
+
 void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	CSize szScrollBy(0, 0);
 	switch (nChar)
 	{
 	case VK_RIGHT:
-		if (m_nActivePage == -1)
-			SetActivePage(0);
+		if (m_nActivePage < 0)
+			SetActivePage(DisplayPageNumber(0));
 		else if (m_nActivePage < m_nPageCount - 1)
-			SetActivePage(m_nActivePage + 1);
+			SetActivePage(DisplayPageNumber(m_nActivePage.display() + 1));
 		return;
 
 	case VK_LEFT:
-		if (m_nActivePage == -1)
-			SetActivePage(m_nPageCount - 1);
+		if (m_nActivePage < 0)
+			SetActivePage(DisplayPageNumber(m_nPageCount - 1));
 		else if (m_nActivePage >= 1)
-			SetActivePage(m_nActivePage - 1);
+			SetActivePage(DisplayPageNumber(m_nActivePage.display() - 1));
 		return;
 
 	case VK_DOWN:
-		if (m_nActivePage == -1)
-			SetActivePage(0);
+		if (m_nActivePage < 0)
+			SetActivePage(DisplayPageNumber(0));
 		else if (m_nActivePage < m_nPageCount - m_nPagesInRow)
-			SetActivePage(m_nActivePage + m_nPagesInRow);
+			SetActivePage(DisplayPageNumber(m_nActivePage.display() + m_nPagesInRow));
 		return;
 
 	case VK_UP:
-		if (m_nActivePage == -1)
-			SetActivePage(m_nPageCount - 1);
+		if (m_nActivePage < 0)
+			SetActivePage(DisplayPageNumber(m_nPageCount - 1));
 		else if (m_nActivePage >= m_nPagesInRow)
-			SetActivePage(m_nActivePage - m_nPagesInRow);
+			SetActivePage(DisplayPageNumber(m_nActivePage.display() - m_nPagesInRow));
 		return;
 
 	case VK_RETURN:
 	case VK_SPACE:
-		if (m_nActivePage != -1)
-		{
-			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, m_nActivePage));
-		}
+		if (m_nActivePage < 0)
+			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, Pages(m_nActivePage).nRealPageNum));
 		return;
 
 	case VK_NEXT:
@@ -413,8 +457,8 @@ void CThumbnailsView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CThumbnailsView::OnSetFocus(CWnd* pOldWnd)
 {
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		if (m_pages[nPage].bSelected)
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+		if (Pages(nPage).bSelected)
 			InvalidatePage(nPage);
 
 	CMyScrollView::OnSetFocus(pOldWnd);
@@ -422,16 +466,16 @@ void CThumbnailsView::OnSetFocus(CWnd* pOldWnd)
 
 void CThumbnailsView::OnKillFocus(CWnd* pNewWnd)
 {
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		if (m_pages[nPage].bSelected)
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+		if (Pages(nPage).bSelected)
 			InvalidatePage(nPage);
 
 	CMyScrollView::OnKillFocus(pNewWnd);
 }
 
-void CThumbnailsView::SelectPage(int nPage, bool bSelect)
+void CThumbnailsView::SelectPage(DisplayPageNumber nPage, bool bSelect)
 {
-	Page& page = m_pages[nPage];
+	Page& page = Pages(nPage);
 	if (page.bSelected == bSelect)
 		return;
 
@@ -442,9 +486,9 @@ void CThumbnailsView::SelectPage(int nPage, bool bSelect)
 
 void CThumbnailsView::ClearSelection()
 {
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
 	{
-		Page& page = m_pages[nPage];
+		Page& page = Pages(nPage);
 		if (page.bSelected)
 		{
 			page.bSelected = false;
@@ -455,7 +499,7 @@ void CThumbnailsView::ClearSelection()
 	UpdateWindow();
 }
 
-void CThumbnailsView::SetActivePage(int nPage, bool bSetSelection)
+void CThumbnailsView::SetActivePage(DisplayPageNumber nPage, bool bSetSelection)
 {
 	if (m_nActivePage != nPage && m_nActivePage != -1)
 		InvalidatePage(m_nActivePage);
@@ -471,7 +515,7 @@ void CThumbnailsView::SetActivePage(int nPage, bool bSetSelection)
 	UpdateWindow();
 }
 
-void CThumbnailsView::SetCurrentPage(int nPage)
+void CThumbnailsView::SetCurrentPage(DisplayPageNumber nPage)
 {
 	if (nPage == m_nCurrentPage)
 		return;
@@ -492,68 +536,88 @@ void CThumbnailsView::SetCurrentPage(int nPage)
 
 void CThumbnailsView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	int nPage = GetPageFromPoint(point);
-
-	if ((nFlags & MK_CONTROL) != 0)
-	{
-		if (nPage != -1 && m_nActivePage == -1)
-		{
-			SetActivePage(nPage);
-		}
-		else if (nPage != -1)
-		{
-			SetActivePage(nPage, false);
-			SelectPage(nPage, !m_pages[nPage].bSelected);
-		}
-	}
-	else if ((nFlags & MK_SHIFT) != 0)
-	{
-		if (nPage != -1 && m_nActivePage == -1)
-		{
-			SetActivePage(nPage);
-		}
-		else if (nPage != -1)
-		{
-			if (nPage > m_nActivePage)
-			{
-				int i = m_nActivePage;
-				while (i < nPage && m_pages[i].bSelected && m_pages[i + 1].bSelected)
-					SelectPage(i++, false);
-				while (i <= nPage)
-					SelectPage(i++);
-			}
-			else if (nPage < m_nActivePage)
-			{
-				int i = m_nActivePage;
-				while (i > nPage && m_pages[i].bSelected && m_pages[i - 1].bSelected)
-					SelectPage(i--, false);
-				while (i >= nPage)
-					SelectPage(i--);
-			}
-			SetActivePage(nPage, false);
-		}
-	}
-	else
-	{
-		if (nPage != -1)
-		{
-			SetActivePage(nPage);
-			UpdateObservers(PageMsg(THUMBNAIL_CLICKED, nPage));
-		}
-		else if (m_nActivePage != -1)
-			ClearSelection();
-	}
+	// Try to detect drags
+	ASSERT(!m_bDragging);
+	SetCapture();
+	m_bDragDetect = true;
+	m_DragStart = point;
+	SetTimer(nDragTimer, 1000, nullptr);
 
 	CMyScrollView::OnLButtonDown(nFlags, point);
 }
 
-void CThumbnailsView::OnRButtonDown(UINT nFlags, CPoint point)
+void CThumbnailsView::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	int nPage = GetPageFromPoint(point);
+	if(m_bDragging && m_nInsertMarker >= 0)
+		MoveSelectedPages();
+	else
+	{
+		DisplayPageNumber nPage = GetPageFromPoint(point);
+
+		if ((nFlags & MK_CONTROL) != 0)
+		{
+			if (nPage != -1 && m_nActivePage == -1)
+			{
+				SetActivePage(nPage);
+			}
+			else if (nPage != -1)
+			{
+				SetActivePage(nPage, false);
+				SelectPage(nPage, !Pages(nPage).bSelected);
+			}
+		}
+		else if ((nFlags & MK_SHIFT) != 0)
+		{
+			if (nPage != -1 && m_nActivePage == -1)
+			{
+				SetActivePage(nPage);
+			}
+			else if (nPage != -1)
+			{
+				if (nPage > m_nActivePage)
+				{
+					DisplayPageNumber i = m_nActivePage;
+					while (i < nPage && Pages(i).bSelected && Pages(i + 1).bSelected)
+						SelectPage(i++, false);
+					while (i <= nPage)
+						SelectPage(i++);
+				}
+				else if (nPage < m_nActivePage)
+				{
+					DisplayPageNumber i = m_nActivePage;
+					while (i > nPage && Pages(i).bSelected && Pages(i - 1).bSelected)
+						SelectPage(i--, false);
+					while (i >= nPage)
+						SelectPage(i--);
+				}
+				SetActivePage(nPage, false);
+			}
+		}
+		else
+		{
+			if (nPage != -1)
+			{
+				SetActivePage(nPage);
+				UpdateObservers(PageMsg(THUMBNAIL_CLICKED, Pages(nPage).nRealPageNum));
+			}
+			else if (m_nActivePage != -1)
+				ClearSelection();
+		}
+	}
+
+	if(m_bDragDetect || m_bDragging)
+		CancelDrag();
+
+	CMyScrollView::OnLButtonUp(nFlags, point);
+}
+
+void CThumbnailsView::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	DisplayPageNumber nPage = GetPageFromPoint(point);
 
 	if (nPage == -1)
 		ClearSelection();
-	else if (!m_pages[nPage].bSelected)
+	else if (!Pages(nPage).bSelected)
 	{
 		ClearSelection();
 		SetActivePage(nPage);
@@ -563,7 +627,105 @@ void CThumbnailsView::OnRButtonDown(UINT nFlags, CPoint point)
 	ClientToScreen(rect);
 	OnShowSettings(0, (LPARAM)(LPRECT) rect);
 
-	CMyScrollView::OnRButtonDown(nFlags, point);
+	CMyScrollView::OnRButtonUp(nFlags, point);
+}
+
+void CThumbnailsView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CMyScrollView::OnMouseMove(nFlags, point);
+	if(m_bDragDetect)
+	{
+		CSize dist = point - m_DragStart;
+		if(dist.cx > GetSystemMetrics(SM_CXDRAG) || dist.cy > GetSystemMetrics(SM_CYDRAG))
+			StartDrag();
+	}
+
+	if(m_bDragging)
+	{
+		DisplayPageNumber nPage = GetPageFromPoint(point);
+		if(nPage < 0)
+		{
+			CRect rcClient;
+			GetClientRect(&rcClient);
+			if(rcClient.PtInRect(point))
+			{
+				for(DisplayPageNumber i(m_nPageCount); i != 0; --i)
+				{
+					CRect r = Pages(i-1).rcPage;
+					r.OffsetRect(-GetScrollPosition());
+					if(point.x > r.right && point.y >= r.top && point.y <= r.bottom)
+					{
+						nPage = i;
+						break;
+					}
+				}
+			}
+		}
+
+		if(nPage < 0 || (nPage < m_nPageCount && Pages(nPage).bSelected))
+		{
+			nPage = DisplayPageNumber(-1);
+			SetCursor(LoadCursor(NULL, IDC_NO));
+		}
+		else
+		{
+			SetCursor(LoadCursor(NULL, IDC_UPARROW));
+		}
+
+		if(m_nInsertMarker != nPage)
+		{
+			m_nInsertMarker = nPage;
+			Invalidate();
+		}
+	}
+}
+
+void CThumbnailsView::OnTimer(UINT_PTR nTimerId)
+{
+	if(nTimerId == nDragTimer)
+		StartDrag();
+}
+
+void CThumbnailsView::OnCaptureChanged(CWnd* pWnd)
+{
+	if(pWnd != this && (m_bDragDetect || m_bDragging)) 
+		CancelDrag();
+}
+
+void CThumbnailsView::StartDrag()
+{
+	// Starting a drag/drop operation
+	CancelDrag();
+	SetCapture();
+	m_bDragging = true;
+
+	// If the start point is part of the selection, we drag the entire
+	// selection; otherwise, we only drag the single item.
+	DisplayPageNumber nPage = GetPageFromPoint(m_DragStart);
+	if (nPage == -1)
+		ClearSelection();
+	else if (!Pages(nPage).bSelected)
+	{
+		ClearSelection();
+		SetActivePage(nPage);
+	}
+
+	SetCursor(LoadCursor(NULL, IDC_NO));
+}
+
+void CThumbnailsView::CancelDrag()
+{
+	m_bDragDetect = false;
+	m_bDragging = false;
+	ReleaseCapture();
+	KillTimer(nDragTimer);
+	SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+	if(m_nInsertMarker != -1)
+	{
+		m_nInsertMarker = DisplayPageNumber(-1);
+		Invalidate();
+	}
 }
 
 LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
@@ -592,9 +754,9 @@ LRESULT CThumbnailsView::OnShowSettings(WPARAM wParam, LPARAM lParam)
 	else
 	{
 		bool bDeleted = false;
-		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
 		{
-			Page& page = m_pages[nPage];
+			Page& page = Pages(nPage);
 			if (page.bSelected && page.bIsDeleted)
 			{
 				bDeleted = true;
@@ -686,13 +848,13 @@ BOOL CThumbnailsView::OnMouseWheel(UINT nFlags, short zDelta, CPoint point)
 	return false;
 }
 
-bool CThumbnailsView::InvalidatePage(int nPage)
+bool CThumbnailsView::InvalidatePage(DisplayPageNumber nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 
 	CRect rect(CPoint(0, 0), GetViewportSize());
 	CPoint ptScroll = GetScrollPosition();
-	if (rect.IntersectRect(CRect(rect), m_pages[nPage].rcDisplay - ptScroll))
+	if (rect.IntersectRect(CRect(rect), Pages(nPage).rcDisplay - ptScroll))
 	{
 		InvalidateRect(rect, false);
 		return true;
@@ -727,19 +889,19 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 	m_bInsideUpdateLayout = true;
 
 	// Save page and offset to restore after changes
-	int nAnchorPage;
+	DisplayPageNumber nAnchorPage(-1);
 	CPoint ptAnchorOffset;
 	CPoint ptScroll = GetScrollPosition();
 
 	if (updateType == TOP)
 	{
-		int nTopPage = 0;
+		DisplayPageNumber nTopPage(0);
 		while (nTopPage < m_nPageCount - 1 &&
-				ptScroll.y >= m_pages[nTopPage].rcDisplay.bottom)
+				ptScroll.y >= Pages(nTopPage).rcDisplay.bottom)
 			++nTopPage;
 
 		nAnchorPage = nTopPage;
-		ptAnchorOffset = ptScroll - m_pages[nTopPage].rcPage.TopLeft();
+		ptAnchorOffset = ptScroll - Pages(nTopPage).rcPage.TopLeft();
 	}
 
 	int nThumbnailWidth = 2*nHorzMargin + 2*nFrameWidth + m_szThumbnail.cx;
@@ -764,12 +926,12 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 		if (nOffsetX < 0)
 			nOffsetX = 0;
 
-		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+		for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
 		{
-			int nRow = nPage / m_nPagesInRow;
-			int nCol = nPage % m_nPagesInRow;
+			int nRow = nPage.display() / m_nPagesInRow;
+			int nCol = nPage.display() % m_nPagesInRow;
 
-			Page& page = m_pages[nPage];
+			Page& page = Pages(nPage);
 
 			CPoint ptOffset(nPadding + nCol*nThumbnailWidth + static_cast<int>(2*nCol*nOffsetX),
 					nPadding + nRow*nThumbnailHeight);
@@ -803,7 +965,7 @@ void CThumbnailsView::UpdateLayout(UpdateType updateType)
 	SetScrollSizes(m_szDisplay, szDevPage, szDevLine, false);
 
 	if (updateType == TOP)
-		ScrollToPosition(m_pages[nAnchorPage].rcPage.TopLeft() + ptAnchorOffset, false);
+		ScrollToPosition(Pages(nAnchorPage).rcPage.TopLeft() + ptAnchorOffset, false);
 
 	m_bInsideUpdateLayout = false;
 	UpdateVisiblePages();
@@ -844,14 +1006,14 @@ void CThumbnailsView::UpdateVisiblePages()
 		CSize szViewport = GetViewportSize();
 		int nTop = GetScrollPosition().y;
 
-		int nTopPage = 0;
+		DisplayPageNumber nTopPage(0);
 		while (nTopPage < m_nPageCount - 1 &&
-				nTop >= m_pages[nTopPage].rcDisplay.bottom)
+				nTop >= Pages(nTopPage).rcDisplay.bottom)
 			++nTopPage;
 
-		int nBottomPage = nTopPage + 1;
+		DisplayPageNumber nBottomPage = nTopPage + 1;
 		while (nBottomPage < m_nPageCount &&
-				m_pages[nBottomPage].rcDisplay.top < nTop + szViewport.cy)
+				Pages(nBottomPage).rcDisplay.top < nTop + szViewport.cy)
 			++nBottomPage;
 
 		if (theApp.GetAppSettings()->bGenAllThumbnails)
@@ -865,7 +1027,7 @@ void CThumbnailsView::UpdateVisiblePages()
 			}
 		}
 
-		for (int nPage = nBottomPage - 1; nPage >= nTopPage; --nPage)
+		for (DisplayPageNumber nPage = nBottomPage - 1; nPage >= nTopPage; --nPage)
 			UpdatePage(nPage, m_pThread);
 
 		m_pThread->ResumeJobs();
@@ -873,29 +1035,29 @@ void CThumbnailsView::UpdateVisiblePages()
 	}
 }
 
-void CThumbnailsView::UpdatePage(int nPage, CThumbnailsThread* pThread)
+void CThumbnailsView::UpdatePage(DisplayPageNumber nPage, CThumbnailsThread* pThread)
 {
-	Page& page = m_pages[nPage];
+	Page& page = Pages(nPage);
 
 	if (!page.bRendered ||
 			!(page.szBitmap.cx <= m_szThumbnail.cx && page.szBitmap.cy == m_szThumbnail.cy ||
 			  page.szBitmap.cx == m_szThumbnail.cx && page.szBitmap.cy <= m_szThumbnail.cy))
 	{
-		pThread->AddJob(nPage, m_nRotate, m_szThumbnail, m_displaySettings);
+		pThread->AddJob(page.nRealPageNum, m_nRotate, m_szThumbnail, m_displaySettings);
 		InvalidatePage(nPage);
 	}
 }
 
 LRESULT CThumbnailsView::OnThumbnailRendered(WPARAM wParam, LPARAM lParam)
 {
-	int nPage = (int)wParam;
+	DisplayPageNumber nPage = DisplayPageNumber(wParam);
 	CDIB* pBitmap = reinterpret_cast<CDIB*>(lParam);
 
 	m_dataLock.Lock();
 	m_bitmaps.erase(pBitmap);
 	m_dataLock.Unlock();
 
-	Page& page = m_pages[nPage];
+	Page& page = Pages(nPage);
 	page.DeleteBitmap();
 	page.bRendered = true;
 	if (pBitmap != NULL)
@@ -931,12 +1093,12 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 			m_dataLock.Unlock();
 		}
 
-		PostMessage(WM_THUMBNAIL_RENDERED, msg->nPage, lParam);
+		PostMessage(WM_THUMBNAIL_RENDERED, m_pSource->RealPageToDisplayPage(msg->nPage).display(), lParam);
 	}
 	else if (message->code == CURRENT_PAGE_CHANGED)
 	{
 		const PageMsg* msg = static_cast<const PageMsg*>(message);
-		SetCurrentPage(msg->nPage);
+		SetCurrentPage(m_pSource->RealPageToDisplayPage(msg->nPage));
 	}
 	else if (message->code == ROTATE_CHANGED)
 	{
@@ -946,8 +1108,8 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 		{
 			m_nRotate = msg->nRotate;
 
-			for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-				m_pages[nPage].DeleteBitmap();
+			for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+				Pages(nPage).DeleteBitmap();
 
 			UpdateAllThumbnails();
 		}
@@ -968,9 +1130,9 @@ void CThumbnailsView::OnUpdate(const Observable* source, const Message* message)
 	}
 }
 
-void CThumbnailsView::RecalcPageRects(int nPage)
+void CThumbnailsView::RecalcPageRects(DisplayPageNumber nPage)
 {
-	Page& page = m_pages[nPage];
+	Page& page = Pages(nPage);
 
 	if (page.pBitmap != NULL)
 	{
@@ -995,29 +1157,27 @@ void CThumbnailsView::RecalcPageRects(int nPage)
 		page.rcBitmap.bottom + nFrameWidth + nNumberSkip), CSize(nNumberWidth, nNumberHeight));
 }
 
-int CThumbnailsView::GetPageFromPoint(CPoint point)
+DisplayPageNumber CThumbnailsView::GetPageFromPoint(CPoint point)
 {
 	point += GetScrollPosition();
-
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
 	{
-		if (m_pages[nPage].rcBitmap.PtInRect(point)
-			|| m_pages[nPage].rcNumber.PtInRect(point))
+		if (Pages(nPage).rcBitmap.PtInRect(point)
+			|| Pages(nPage).rcNumber.PtInRect(point))
 		{
 			return nPage;
 		}
 	}
-
-	return -1;
+	return DisplayPageNumber(-1);
 }
 
-void CThumbnailsView::EnsureVisible(int nPage)
+void CThumbnailsView::EnsureVisible(DisplayPageNumber nPage)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
 
 	CSize szViewport = GetViewportSize();
 	CPoint ptScroll = GetScrollPosition();
-	Page& page = m_pages[nPage];
+	Page& page = Pages(nPage);
 
 	int nScrollBy = 0;
 	if (page.rcDisplay.top <= ptScroll.y)
@@ -1038,8 +1198,8 @@ void CThumbnailsView::SettingsChanged()
 	{
 		m_displaySettings = appSettings;
 
-		for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-			m_pages[nPage].DeleteBitmap();
+		for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+			Pages(nPage).DeleteBitmap();
 
 		UpdateAllThumbnails();
 	}
@@ -1081,8 +1241,8 @@ void CThumbnailsView::OnEnterIdle(UINT nWhy, CWnd* pWho)
 
 bool CThumbnailsView::HasSelection() const
 {
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		if (m_pages[nPage].bSelected)
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+		if (Pages(nPage).bSelected)
 			return true;
 
 	return false;
@@ -1090,9 +1250,9 @@ bool CThumbnailsView::HasSelection() const
 
 void CThumbnailsView::PrintSelectedPages()
 {
-	set<int> selection;
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		if (m_pages[nPage].bSelected)
+	set<DisplayPageNumber> selection;
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+		if (Pages(nPage).bSelected)
 			selection.insert(nPage);
 
 	UpdateObservers(PageRangeMsg(PRINT_PAGES, selection));
@@ -1100,9 +1260,9 @@ void CThumbnailsView::PrintSelectedPages()
 
 void CThumbnailsView::ExportSelectedPages()
 {
-	set<int> selection;
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
-		if (m_pages[nPage].bSelected)
+	set<DisplayPageNumber> selection;
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+		if (Pages(nPage).bSelected)
 			selection.insert(nPage);
 
 	UpdateObservers(PageRangeMsg(EXPORT_PAGES, selection));
@@ -1110,15 +1270,30 @@ void CThumbnailsView::ExportSelectedPages()
 
 void CThumbnailsView::DeleteSelectedPages(bool bDeleted)
 {
-	set<int> selection;
-	for (int nPage = 0; nPage < m_nPageCount; ++nPage)
+	set<DisplayPageNumber> selection;
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
 	{
-		if (m_pages[nPage].bSelected)
+		if (Pages(nPage).bSelected)
 		{
-			m_pages[nPage].bIsDeleted = bDeleted;
+			Pages(nPage).bIsDeleted = bDeleted;
 			InvalidatePage(nPage);
 			selection.insert(nPage);
 		}
 	}
 	UpdateObservers(PageRangeMsg(bDeleted ? DELETE_PAGES : UNDELETE_PAGES, selection));
+}
+
+void CThumbnailsView::MoveSelectedPages()
+{
+	set<DisplayPageNumber> selection;
+	for (DisplayPageNumber nPage(0); nPage < m_nPageCount; ++nPage)
+	{
+		if (Pages(nPage).bSelected)
+			selection.insert(nPage);
+	}
+	UpdateObservers(PageRangeMsg(MOVE_PAGES, selection, m_nInsertMarker));
+	move_items_to(m_pages_, selection, m_nInsertMarker);
+
+	UpdateLayout(RECALC);
+	InvalidateViewport();
 }

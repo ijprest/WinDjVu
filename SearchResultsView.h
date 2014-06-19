@@ -31,7 +31,7 @@ public:
 	CSearchResultsView();
 	virtual ~CSearchResultsView();
 
-	void AddString(const CString& strResult, int nPage, int nSelStart, int nSelEnd);
+	void AddString(const CString& strResult, DisplayPageNumber nPage, int nSelStart, int nSelEnd);
 	void Reset();
 
 // Overrides
@@ -48,8 +48,8 @@ protected:
 
 	struct ResultData
 	{
-		int nPage;
-		int nSelStart, nSelEnd;
+		DisplayPageNumber nPage = DisplayPageNumber(-1);
+		int nSelStart = 0, nSelEnd = 0;
 	};
 	list<ResultData> m_results;
 	bool m_bChangeInternal;

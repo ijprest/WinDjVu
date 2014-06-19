@@ -73,7 +73,7 @@ void CSearchResultsView::OnInitialUpdate()
 	GetTreeCtrl().SetItemHeight(20);
 }
 
-void CSearchResultsView::AddString(const CString& strResult, int nPage, int nSelStart, int nSelEnd)
+void CSearchResultsView::AddString(const CString& strResult, DisplayPageNumber nPage, int nSelStart, int nSelEnd)
 {
 	ResultData data;
 	data.nPage = nPage;

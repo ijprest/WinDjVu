@@ -98,7 +98,7 @@ public:
 		: pchildren(new list<Bookmark>()), children(*pchildren), pParent(NULL),
 		  nLinkType(URL), nPage(0), ptOffset(0, 0), bMargin(false), bZoom(false) {}
 	Bookmark(const Bookmark& bm)
-		: pchildren(new list<Bookmark>()), children(*pchildren) { *this = bm; }
+		: pchildren(new list<Bookmark>()), children(*pchildren), nPage(-1) { *this = bm; }
 	~Bookmark()
 		{ delete pchildren; }
 	Bookmark& operator=(const Bookmark& bm);
@@ -119,7 +119,7 @@ public:
 
 	int nLinkType;
 	GUTF8String strURL;
-	int nPage;
+	RealPageNumber nPage;
 	CPoint ptOffset;
 	bool bMargin;
 	bool bZoom;
@@ -144,7 +144,7 @@ struct DocSettings : public Observable
 		PageIndex = 3
 	};
 
-	int nPage;
+	RealPageNumber nPage;
 	CPoint ptOffset;
 	int nZoomType;
 	double fZoom;
@@ -158,15 +158,15 @@ struct DocSettings : public Observable
 
 	CString strLastKnownLocation;
 
-	map<int, PageSettings> pageSettings;
+	map<RealPageNumber, PageSettings> pageSettings;
 	list<Bookmark> bookmarks;
 
 	GUTF8String GetXML(bool skip_view_settings = false) const;
 	void Load(const XMLNode& node);
 
-	Annotation* AddAnnotation(const Annotation& anno, int nPage);
+	Annotation* AddAnnotation(const Annotation& anno, RealPageNumber nPage);
 	bool DeleteBookmark(const Bookmark* pBookmark);
-	bool DeleteAnnotation(const Annotation* pAnno, int nPage);
+	bool DeleteAnnotation(const Annotation* pAnno, RealPageNumber nPage);
 };
 
 struct PageInfo
@@ -245,18 +245,22 @@ public:
 	static DjVuSource* FromFile(const CString& strFileName);
 	static void SetApplication(IApplication* pApp) { pApplication = pApp; }
 
-	GP<DjVuImage> GetPage(int nPage, Observer* observer = NULL);
-	void RemoveFromCache(int nPage, Observer* observer);
+	GP<DjVuImage> GetPage(RealPageNumber nPage, Observer* observer = NULL);
+	GP<DjVuImage> GetPage(DisplayPageNumber nPage, Observer* observer = NULL);
+	void RemoveFromCache(RealPageNumber nPage, Observer* observer);
+	void RemoveFromCache(DisplayPageNumber nPage, Observer* observer);
 	void ChangeObservedPages(Observer* observer,
-			const vector<int>& add, const vector<int>& remove);
-	void DeletePage(int nPage, bool bDelete);
+			const vector<DisplayPageNumber>& add, const vector<DisplayPageNumber>& remove);
+	void DeletePage(DisplayPageNumber nPage, bool bDelete);
+	void MovePages(const set<DisplayPageNumber>& pages, DisplayPageNumber nIndex);
 
-	PageInfo GetPageInfo(int nPage, bool bNeedText = false, bool bNeedAnno = false);
-	bool IsPageCached(int nPage, Observer* observer);
+	PageInfo GetPageInfo(RealPageNumber nPage, bool bNeedText = false, bool bNeedAnno = false);
+	PageInfo GetPageInfo(DisplayPageNumber nPage, bool bNeedText = false, bool bNeedAnno = false);
+	bool IsPageCached(DisplayPageNumber nPage, Observer* observer);
 	int GetPageCount() const { return m_nPageCount; }
 
 	bool HasText() const { return m_bHasText; }
-	int GetPageFromId(const GUTF8String& strPageId) const;
+	RealPageNumber GetPageFromId(const GUTF8String& strPageId) const;
 
 	GP<DjVmNav> GetContents() { return m_pDjVuDoc->get_djvm_nav(); }
 	GP<DjVuDocument> GetDjVuDoc() { return m_pDjVuDoc; }
@@ -268,6 +272,8 @@ public:
 	DictionaryInfo* GetDictionaryInfo() { return &m_dictInfo; }
 	bool IsDictionary() const { return m_dictInfo.strPageIndex.length() != 0; }
 	static void UpdateDictionaries();
+	DisplayPageNumber RealPageToDisplayPage(RealPageNumber nPage);
+	RealPageNumber DisplayPageToRealPage(DisplayPageNumber nPage);
 
 	static map<MD5, DocSettings>& GetAllSettings() { return settings; }
 
@@ -282,8 +288,9 @@ protected:
 
 	struct PageData : public Observable
 	{
-		PageData() : hDecodingThread(NULL), bDeleted(false) {}
+		PageData(int nRealPageNum) : nRealPageNum(nRealPageNum), hDecodingThread(NULL), bDeleted(false) {}
 
+		RealPageNumber nRealPageNum;
 		GP<DjVuImage> pImage;
 		PageInfo info;
 		bool bDeleted;
@@ -294,7 +301,7 @@ protected:
 	};
 
 	DjVuSource(const CString& strFileName, GP<DjVuDocument> pDoc, DocSettings* pSettings);
-	PageInfo ReadPageInfo(int nPage, bool bNeedText = false, bool bNeedAnno = false);
+	PageInfo ReadPageInfo(DisplayPageNumber nPage, bool bNeedText = false, bool bNeedAnno = false);
 	void ReadAnnotations(GP<ByteStream> pInclStream, set<GUTF8String>& processed, GP<ByteStream> pAnnoStream);
 
 	GP<DjVuDocument> m_pDjVuDoc;
@@ -303,7 +310,10 @@ protected:
 	CCriticalSection m_lock;
 	bool m_bHasText;
 
-	vector<PageData> m_pages;
+	vector<unique_ptr<PageData>> m_pages_;
+	PageData& Pages(DisplayPageNumber nPage) { return *m_pages_[nPage.display()]; }
+	PageData& Pages(RealPageNumber nPage) { return *m_pages_[RealPageToDisplayPage(nPage).display()]; }
+
 	DocSettings* m_pSettings;
 	DictionaryInfo m_dictInfo;
 

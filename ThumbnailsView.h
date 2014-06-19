@@ -39,12 +39,12 @@ public:
 // Attributes
 public:
 	DjVuSource* GetSource() const { return m_pSource; }
-	int GetCurrentPage() const { return m_nCurrentPage; }
+	DisplayPageNumber GetCurrentPage() const { return m_nCurrentPage; }
 
-	void SetCurrentPage(int nPage);
-	void SetActivePage(int nPage, bool bSetSelection = true);
-	void EnsureVisible(int nPage);
-	void SelectPage(int nPage, bool bSelect = true);
+	void SetCurrentPage(DisplayPageNumber nPage);
+	void SetActivePage(DisplayPageNumber nPage, bool bSetSelection = true);
+	void EnsureVisible(DisplayPageNumber nPage);
+	void SelectPage(DisplayPageNumber nPage, bool bSelect = true);
 	void ClearSelection();
 	bool HasSelection() const;
 
@@ -57,6 +57,8 @@ public:
 
 	virtual bool OnScrollBy(CSize szScrollBy, bool bDoScroll = true);
 	virtual bool OnScroll(UINT nScrollCode, UINT nPos, bool bDoScroll = true);
+
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 // Implementation
 public:
@@ -72,7 +74,7 @@ protected:
 	DjVuSource* m_pSource;
 	bool m_bInsideUpdateLayout;
 	CFont m_font;
-	int m_nActivePage, m_nCurrentPage;
+	DisplayPageNumber m_nActivePage, m_nCurrentPage;
 	bool m_bVisible, m_bInitialized;
 	int m_nRotate;
 	int m_nPagesInRow;
@@ -91,23 +93,25 @@ protected:
 		RECALC = 1
 	};
 	void UpdateLayout(UpdateType updateType = TOP);
-	void RecalcPageRects(int nPage);
+	void RecalcPageRects(DisplayPageNumber nPage);
 	void UpdateVisiblePages();
-	void UpdatePage(int nPage, CThumbnailsThread* pThread);
-	bool InvalidatePage(int nPage);
-	void DrawPage(CDC* pDC, int nPage);
-	int GetPageFromPoint(CPoint point);
+	void UpdatePage(DisplayPageNumber nPage, CThumbnailsThread* pThread);
+	bool InvalidatePage(DisplayPageNumber nPage);
+	void DrawPage(CDC* pDC, DisplayPageNumber nPage);
+	DisplayPageNumber GetPageFromPoint(CPoint point);
 	void ResizeThumbnails(int nThumbnailSize);
 	void UpdateAllThumbnails();
 	void PrintSelectedPages();
 	void ExportSelectedPages();
 	void DeleteSelectedPages(bool bDeleted);
+	void MoveSelectedPages();
 
 	struct Page
 	{
-		Page() : pBitmap(NULL), bRendered(false), bSelected(false), bIsDeleted(false) {}
+		Page(int nRealPageNum) : nRealPageNum(nRealPageNum), pBitmap(NULL), bRendered(false), bSelected(false), bIsDeleted(false) {}
 		~Page() { delete pBitmap; }
 
+		RealPageNumber nRealPageNum;
 		CRect rcDisplay, rcPage, rcBitmap, rcNumber;
 		CLightweightDIB* pBitmap;
 		CSize szBitmap, szDisplay;
@@ -122,8 +126,20 @@ protected:
 			bRendered = false;
 		}
 	};
-	vector<Page> m_pages;
 	CSize m_szDisplay;
+	vector<unique_ptr<Page>> m_pages_;
+	Page& Pages(DisplayPageNumber nPage) { return *m_pages_[nPage.display()]; }
+	const Page& Pages(DisplayPageNumber nPage) const { return *m_pages_[nPage.display()]; }
+	Page& Pages(RealPageNumber nPage) { return *m_pages_[m_pSource->RealPageToDisplayPage(nPage).display()]; }
+	const Page& Pages(RealPageNumber nPage) const { return *m_pages_[m_pSource->RealPageToDisplayPage(nPage).display()]; }
+
+	// Drag/drop support
+	CPoint m_DragStart;
+	bool m_bDragging;
+	bool m_bDragDetect;
+	DisplayPageNumber m_nInsertMarker;
+	void StartDrag();
+	void CancelDrag();
 
 	// Generated message map functions
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
@@ -132,6 +148,9 @@ protected:
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg int OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message);
@@ -142,5 +161,8 @@ protected:
 	afx_msg LRESULT OnShowParent(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
 	afx_msg void OnEnterIdle(UINT nWhy, CWnd* pWho);
+	afx_msg void OnTimer(UINT_PTR);
+	afx_msg void OnCaptureChanged(CWnd*);
+	afx_msg void OnCancel();
 	DECLARE_MESSAGE_MAP()
 };

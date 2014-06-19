@@ -29,7 +29,7 @@
 
 IMPLEMENT_DYNAMIC(CGotoPageDlg, CMyDialog)
 
-CGotoPageDlg::CGotoPageDlg(int nPage, int nPageCount, CWnd* pParent)
+CGotoPageDlg::CGotoPageDlg(DisplayPageNumber nPage, int nPageCount, CWnd* pParent)
 	: CMyDialog(CGotoPageDlg::IDD, pParent), m_nPage(nPage + 1), m_nPageCount(nPageCount)
 {
 	m_edtPage.SetInteger();
@@ -43,12 +43,17 @@ void CGotoPageDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CMyDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PAGE, m_edtPage);
-	DDX_Text(pDX, IDC_PAGE, m_nPage);
+	int nPage = m_nPage.display();
+	DDX_Text(pDX, IDC_PAGE, nPage);
 
 	if (!pDX->m_bSaveAndValidate)
 	{
 		CString strPageCount = FormatString(IDS_OF_PAGE_COUNT, m_nPageCount);
 		DDX_Text(pDX, IDC_PAGE_COUNT, strPageCount);
+	}
+	else
+	{
+		m_nPage = DisplayPageNumber(nPage);
 	}
 }
 
@@ -73,9 +78,9 @@ void CGotoPageDlg::OnPageUpDown(NMHDR* pNMHDR, LRESULT* pResult)
 		--m_nPage;
 
 	if (m_nPage < 1)
-		m_nPage = 1;
+		m_nPage = DisplayPageNumber(1);
 	else if (m_nPage > m_nPageCount)
-		m_nPage = m_nPageCount;
+		m_nPage = DisplayPageNumber(m_nPageCount);
 
 	UpdateData(false);
 
@@ -87,9 +92,9 @@ void CGotoPageDlg::OnUpdateDialogData()
 	UpdateData();
 
 	if (m_nPage < 1)
-		m_nPage = 1;
+		m_nPage = DisplayPageNumber(1);
 	else if (m_nPage > m_nPageCount)
-		m_nPage = m_nPageCount;
+		m_nPage = DisplayPageNumber(m_nPageCount);
 
 	UpdateData(false);
 }

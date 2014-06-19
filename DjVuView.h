@@ -54,14 +54,14 @@ public:
 
 // Operations
 public:
-	void GoToPage(int nPage, bool bAddHistoryPoint = true);
+	void GoToPage(DisplayPageNumber nPage, bool bAddHistoryPoint = true);
 	void GoToBookmark(const Bookmark& bookmark, bool bAddHistoryPoint = true);
 	void GoToURL(const GUTF8String& url, bool bAddHistoryPoint = true);
-	void GoToSelection(int nPage, int nStartPos, int nEndPos);
-	void ScrollToPage(int nPage, const CPoint& ptOffset, bool bMargin = false);
+	void GoToSelection(DisplayPageNumber nPage, int nStartPos, int nEndPos);
+	void ScrollToPage(DisplayPageNumber nPage, const CPoint& ptOffset, bool bMargin = false);
 
 	int GetPageCount() const { return m_nPageCount; }
-	int GetCurrentPage() const { return m_nPage; }
+	DisplayPageNumber GetCurrentPage() const { return m_nPage; }
 	int GetZoomType() const { return m_nZoomType; }
 	double GetZoom() const;
 	void ZoomTo(int nZoomType, double fZoom = 100.0, bool bRedraw = true);
@@ -70,10 +70,10 @@ public:
 
 	bool UpdatePageInfoFrom(CDjVuView* pFrom);
 	void CopyBitmapsFrom(CDjVuView* pFrom, bool bMove = false);
-	void CopyBitmapFrom(CDjVuView* pFrom, int nPage);
+	void CopyBitmapFrom(CDjVuView* pFrom, DisplayPageNumber nPage);
 
-	CSize GetPageSize(int nPage) const { return m_pages[nPage].GetSize(m_nRotate); }
-	int GetPageDPI(int nPage) const { return m_pages[nPage].info.nDPI; }
+	CSize GetPageSize(DisplayPageNumber nPage) const { return Pages(nPage).GetSize(m_nRotate); }
+	int GetPageDPI(DisplayPageNumber nPage) const { return Pages(nPage).info.nDPI; }
 	void GetNormalizedText(wstring& text, bool bSelected = false,
 			int nMaxLength = -1, bool bKeepHyphens = true);
 
@@ -82,9 +82,9 @@ public:
 	void UpdateVisiblePages();
 
 	bool CreateBookmarkFromSelection(Bookmark& bookmark);
-	void CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, int nPage);
+	void CreateBookmarkFromAnnotation(Bookmark& bookmark, const Annotation* pAnno, DisplayPageNumber nPage);
 	void CreateBookmarkFromView(Bookmark& bookmark);
-	void CreateBookmarkFromPage(Bookmark& bookmark, int nPage);
+	void CreateBookmarkFromPage(Bookmark& bookmark, DisplayPageNumber nPage);
 
 	bool AddHistoryPoint();
 	bool AddHistoryPoint(const Bookmark& bookmark, bool bForce = false);
@@ -180,18 +180,19 @@ protected:
 	CCriticalSection m_dataLock;
 	set<CDIB*> m_bitmaps;
 
-	int m_nPage, m_nPageCount;
-	long m_nPendingPage;
+	DisplayPageNumber m_nPage;
+	int m_nPageCount;
+	DisplayPageNumber m_nPendingPage;
 	CSize m_szDisplay;
-	int CalcTopPage() const;
-	int CalcCurrentPage() const;
-	int CalcBottomPage(int nTopPage) const;
-	void RenderPage(int nPage, int nTimeout = -1, bool bUpdateWindow = true);
+	DisplayPageNumber CalcTopPage() const;
+	DisplayPageNumber CalcCurrentPage() const;
+	DisplayPageNumber CalcBottomPage(DisplayPageNumber nTopPage) const;
+	void RenderPage(DisplayPageNumber nPage, int nTimeout = -1, bool bUpdateWindow = true);
 
-	bool InvalidatePage(int nPage);
-	void DrawPage(CDC* pDC, int nPage);
-	void DrawAnnotation(CDC* pDC, const Annotation& anno, int nPage, bool bActive);
-	void DrawTransparentText(CDC* pDC, int nPage);
+	bool InvalidatePage(DisplayPageNumber nPage);
+	void DrawPage(CDC* pDC, DisplayPageNumber nPage);
+	void DrawAnnotation(CDC* pDC, const Annotation& anno, DisplayPageNumber nPage, bool bActive);
+	void DrawTransparentText(CDC* pDC, DisplayPageNumber nPage);
 
 	int m_nZoomType;
 	double m_fZoom;
@@ -206,9 +207,9 @@ protected:
 
 	struct Page
 	{
-		Page() :
+		Page(int nRealPageNum) :
 			szBitmap(0, 0), ptOffset(0, 0), pBitmap(NULL), nSelStart(-1), nSelEnd(-1),
-			bHasSize(false), bBitmapRendered(false) {}
+			bHasSize(false), bBitmapRendered(false), nRealPageNum(nRealPageNum) {}
 		~Page() { delete pBitmap; }
 
 		CSize GetSize(int nRotate) const
@@ -224,11 +225,12 @@ protected:
 			return (LONG)(info.szPage.cx*0.9) > info.szPage.cy;
 		}
 
-		void Init(DjVuSource* pSource, int nPage, bool bNeedText = false, bool bNeedAnno = false)
+		void Init(DjVuSource* pSource, bool bNeedText = false, bool bNeedAnno = false)
 		{
-			info.Update(pSource->GetPageInfo(nPage, bNeedText, bNeedAnno));
+			info.Update(pSource->GetPageInfo(nRealPageNum, bNeedText, bNeedAnno));
 		}
 
+		RealPageNumber nRealPageNum;
 		PageInfo info;
 
 		bool bHasSize;
@@ -248,10 +250,14 @@ protected:
 			bBitmapRendered = false;
 		}
 	};
-	vector<Page> m_pages;
+	vector<unique_ptr<Page>> m_pages_;
+	Page& Pages(DisplayPageNumber nPage) { return *m_pages_[nPage.display()]; }
+	const Page& Pages(DisplayPageNumber nPage) const { return *m_pages_[nPage.display()]; }
+	Page& Pages(RealPageNumber nPage) { return *m_pages_[m_pSource->RealPageToDisplayPage(nPage).display()]; }
+	const Page& Pages(RealPageNumber nPage) const { return *m_pages_[m_pSource->RealPageToDisplayPage(nPage).display()]; }
 
-	void PreparePageRect(const CSize& szBounds, int nPage);
-	void PreparePageRectFacing(const CSize& szBounds, int nPage);
+	void PreparePageRect(const CSize& szBounds, DisplayPageNumber nPage);
+	void PreparePageRectFacing(const CSize& szBounds, DisplayPageNumber nPage);
 	CSize CalcPageSize(const CSize& szBounds, const CSize& szPage, int nDPI) const;
 	CSize CalcPageSize(const CSize& szBounds, const CSize& szPage, int nDPI, int nZoomType) const;
 	CSize CalcPageBitmapSize(const CSize& szBounds, const CSize& szPage, int nZoomType) const;
@@ -264,22 +270,22 @@ protected:
 	void UpdatePageSizes(int nTop, int nScroll = 0, int nUpdateType = -1);
 	bool UpdatePagesFromTop(int nTop, int nBottom, int nUpdateType = -1);
 	void UpdatePagesFromBottom(int nTop, int nBottom, int nUpdateType = -1);
-	void UpdatePageSize(const CSize& szBounds, int nPage);
-	void UpdatePageSizeFacing(const CSize& szBounds, int nPage);
+	void UpdatePageSize(const CSize& szBounds, DisplayPageNumber nPage);
+	void UpdatePageSizeFacing(const CSize& szBounds, DisplayPageNumber nPage);
 	void DeleteBitmaps();
-	int GetPageFromPoint(CPoint point) const;
-	int GetPageNearPoint(CPoint point) const;
+	DisplayPageNumber GetPageFromPoint(CPoint point) const;
+	DisplayPageNumber GetPageNearPoint(CPoint point) const;
 	void ReadZoomSettings(GP<DjVuANT> pAnt);
 	void ReadDisplayMode(GP<DjVuANT> pAnt);
-	bool IsValidPage(int nPage) const;
-	bool HasFacingPage(int nPage) const;
-	void GetFacingPages(int nPage, Page*& pLeftOrSingle, Page*& pOther,
-			int* pnLeftOrSingle = NULL, int* pnOther = NULL);
-	int FixPageNumber(int nPage) const;
-	int GetNextPage(int nPage) const;
-	void SetLayout(int nLayout, int nPage, const CPoint& ptOffset);
-	void PageRendered(int nPage, CDIB* pDIB);
-	void PageDecoded(int nPage);
+	bool IsValidPage(DisplayPageNumber nPage) const;
+	bool HasFacingPage(DisplayPageNumber nPage) const;
+	void GetFacingPages(DisplayPageNumber nPage, Page*& pLeftOrSingle, Page*& pOther,
+			DisplayPageNumber* pnLeftOrSingle = NULL, DisplayPageNumber* pnOther = NULL);
+	DisplayPageNumber FixPageNumber(DisplayPageNumber nPage) const;
+	DisplayPageNumber GetNextPage(DisplayPageNumber nPage) const;
+	void SetLayout(int nLayout, DisplayPageNumber nPage, const CPoint& ptOffset);
+	void PageRendered(DisplayPageNumber nPage, CDIB* pDIB);
+	void PageDecoded(DisplayPageNumber nPage);
 	void SettingsChanged();
 	void UpdateCursor();
 	void DoPrint(const CString& strRange = _T(""));
@@ -287,7 +293,7 @@ protected:
 	void UpdateDragAction();
 	void UpdatePageNumber();
 	void UpdateView(bool bUpdateSizes = false, bool bUpdatePages = true, bool bUpdateCursor = true);
-	void AlignTopPage(bool bRepaint = true, int nPage = -1);
+	void AlignTopPage(bool bRepaint = true, DisplayPageNumber nPage = DisplayPageNumber(-1));
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -302,37 +308,37 @@ protected:
 	CSize UpdateLayoutFacing(const CSize& szClient);
 	CSize UpdateLayoutContinuous(const CSize& szClient);
 	CSize UpdateLayoutContinuousFacing(const CSize& szClient);
-	void UpdatePagesCacheSingle(bool bUpdateImages, vector<int>& add, vector<int>& remove);
-	void UpdatePagesCacheFacing(bool bUpdateImages, vector<int>& add, vector<int>& remove);
-	void UpdatePagesCacheContinuous(bool bUpdateImages, vector<int>& add, vector<int>& remove);
-	void UpdatePageCache(const CSize& szViewport, int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
-	void UpdatePageCacheSingle(int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
-	void UpdatePageCacheFacing(int nPage, bool bUpdateImages, vector<int>& add, vector<int>& remove);
+	void UpdatePagesCacheSingle(bool bUpdateImages, vector<DisplayPageNumber>& add, vector<DisplayPageNumber>& remove);
+	void UpdatePagesCacheFacing(bool bUpdateImages, vector<DisplayPageNumber>& add, vector<DisplayPageNumber>& remove);
+	void UpdatePagesCacheContinuous(bool bUpdateImages, vector<DisplayPageNumber>& add, vector<DisplayPageNumber>& remove);
+	void UpdatePageCache(const CSize& szViewport, DisplayPageNumber nPage, bool bUpdateImages, vector<DisplayPageNumber>& add, vector<DisplayPageNumber>& remove);
+	void UpdatePageCacheSingle(DisplayPageNumber nPage, bool bUpdateImages, vector<DisplayPageNumber>& add, vector<DisplayPageNumber>& remove);
+	void UpdatePageCacheFacing(DisplayPageNumber nPage, bool bUpdateImages, vector<DisplayPageNumber>& add, vector<DisplayPageNumber>& remove);
 	bool IsViewNextpageEnabled();
 	bool IsViewPreviouspageEnabled() const;
-	void ClearSelection(int nPage = -1);
+	void ClearSelection(DisplayPageNumber nPage = DisplayPageNumber(-1));
 	void UpdateSelectionStatus();
-	bool IsSelectionVisible(int nPage, const DjVuSelection& selection);
-	void EnsureSelectionVisible(int nPage, const DjVuSelection& selection, bool bWait = false);
-	CRect GetSelectionRect(int nPage, const DjVuSelection& selection);
-	CRect TranslatePageRect(int nPage, GRect rect, bool bToDisplay = true, bool bClip = true);
+	bool IsSelectionVisible(DisplayPageNumber nPage, const DjVuSelection& selection);
+	void EnsureSelectionVisible(DisplayPageNumber nPage, const DjVuSelection& selection, bool bWait = false);
+	CRect GetSelectionRect(DisplayPageNumber nPage, const DjVuSelection& selection);
+	CRect TranslatePageRect(DisplayPageNumber nPage, GRect rect, bool bToDisplay = true, bool bClip = true);
 	bool m_bInsideUpdateLayout, m_bInsideMouseMove;
 
 	Annotation* m_pHoverAnno;
 	Annotation* m_pClickedAnno;
 	bool m_bHoverIsCustom, m_bClickedCustom;
-	int m_nHoverPage;
-	Annotation* GetAnnotationFromPoint(const CPoint& point, int& nPage, bool& bCustom);
-	bool PtInAnnotation(const Annotation& anno, int nPage, const CPoint& point);
+	DisplayPageNumber m_nHoverPage;
+	Annotation* GetAnnotationFromPoint(const CPoint& point, DisplayPageNumber& nPage, bool& bCustom);
+	bool PtInAnnotation(const Annotation& anno, DisplayPageNumber nPage, const CPoint& point);
 	void UpdateHoverAnnotation(const CPoint& point);
 	void UpdateHoverAnnotation();
-	bool InvalidateAnno(Annotation* pAnno, int nPage);
+	bool InvalidateAnno(Annotation* pAnno, DisplayPageNumber nPage);
 
 	struct ExportData
 	{
-		ExportData(const set<int>& pages_) : pages(pages_) {}
+		ExportData(const set<DisplayPageNumber>& pages_) : pages(pages_) {}
 
-		const set<int>& pages;
+		const set<DisplayPageNumber>& pages;
 		CDIB::ImageFormat nFormat;
 		CString strPrefix;
 		CString strSuffix;
@@ -341,23 +347,24 @@ protected:
 		CDjVuView* pView;
 	};
 	static unsigned int __stdcall ExportThreadProc(void* pvData);
-	void ExportPages(const set<int>& pages);
-	void DoExportPage(int nPage, bool bCrop = false, GRect rect = GRect());
-	void DeletePages(const set<int>& pages, bool bDelete);
+	void ExportPages(const set<DisplayPageNumber>& pages);
+	void DoExportPage(DisplayPageNumber nPage, bool bCrop = false, GRect rect = GRect());
+	void DeletePages(const set<DisplayPageNumber>& pages, bool bDelete);
+	void MovePages(const set<DisplayPageNumber>&pages, DisplayPageNumber nIndex);
 
 	int m_nMode, m_nType;
 	int m_nSelStartPos;
-	CPoint ScreenToDjVu(int nPage, const CPoint& point, bool bClip = true);
-	int GetTextPosFromPoint(int nPage, const CPoint& point,
+	CPoint ScreenToDjVu(DisplayPageNumber nPage, const CPoint& point, bool bClip = true);
+	int GetTextPosFromPoint(DisplayPageNumber nPage, const CPoint& point,
 			bool bReturnBlockStart = false);
 	void GetTextPos(const DjVuTXT::Zone& zone, const CPoint& pt,
 			int& nPos, double& fBest, bool bReturnBlockStart = false) const;
 	void FindSelectionZones(DjVuSelection& list, DjVuTXT* pText,
 			int nStart, int nEnd) const;
-	void SelectTextRange(int nPage, int nStart, int nEnd,
+	void SelectTextRange(DisplayPageNumber nPage, int nStart, int nEnd,
 			bool& bInfoLoaded, CWaitCursor*& pWaitCursor);
 	bool m_bHasSelection;
-	int m_nSelectionPage;
+	DisplayPageNumber m_nSelectionPage;
 	GRect m_rcSelection;
 
 	struct HistoryPoint
@@ -382,14 +389,14 @@ protected:
 	CFont m_sampleFont;
 	map<int, HFONT> m_fonts;
 
-	int m_nClickedPage;
+	DisplayPageNumber m_nClickedPage;
 	bool m_bDragging, m_bDraggingRight;
 	bool m_bDraggingPage, m_bDraggingText, m_bDraggingRect, m_bDraggingLink;
 	bool m_bPopupMenu;
 	void StopDragging();
 	void OnContextMenu();
 	CPoint m_ptStart, m_ptStartPos, m_ptStartSel, m_ptPrevCursor;
-	int m_nStartPage, m_nPrevPage;
+	DisplayPageNumber m_nStartPage, m_nPrevPage;
 	bool m_bClick;
 	CPoint m_ptClick, m_ptMouse;
 	int m_nClickCount;

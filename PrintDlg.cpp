@@ -62,7 +62,7 @@ map<CString, vector<byte> > CPrintDlg::s_devModes;
 
 IMPLEMENT_DYNAMIC(CPrintDlg, CMyDialog)
 
-CPrintDlg::CPrintDlg(DjVuSource* pSource, int nPage, int nRotate, int nMode, CWnd* pParent)
+CPrintDlg::CPrintDlg(DjVuSource* pSource, DisplayPageNumber nPage, int nRotate, int nMode, CWnd* pParent)
 	: CMyDialog(CPrintDlg::IDD, pParent),
 	  m_pSource(pSource), m_strPages(_T("")), m_bPrintToFile(false),
 	  m_nRangeType(AllPages), m_pPrinter(NULL), m_hPrinter(NULL), m_pPaper(NULL),
@@ -320,7 +320,7 @@ void CPrintDlg::OnOK()
 
 	if (IsPrintSelection())
 	{
-		m_arrPages.push_back(make_pair(m_nCurPage + 1, 0));
+		m_arrPages.push_back(make_pair(m_nCurPage + 1, DisplayPageNumber(0)));
 	}
 	else
 	{
@@ -328,7 +328,7 @@ void CPrintDlg::OnOK()
 		m_pages.clear();
 		if (m_nRangeType == AllPages)
 		{
-			for (int i = 1; i <= m_pSource->GetPageCount(); ++i)
+			for (DisplayPageNumber i(1); i <= m_pSource->GetPageCount(); ++i)
 				m_pages.push_back(i);
 		}
 		else if (m_nRangeType == CurrentPage)
@@ -349,7 +349,7 @@ void CPrintDlg::OnOK()
 		if (m_settings.bBooklet && m_pages.size() > 2)
 		{
 			size_t size = 4 * ((m_pages.size() + 3) / 4);
-			vector<int> pages(size, 0);
+			vector<DisplayPageNumber> pages(size, DisplayPageNumber(0));
 			for (size_t i = 0; i < m_pages.size(); ++i)
 			{
 				if (i < size / 2)
@@ -368,15 +368,15 @@ void CPrintDlg::OnOK()
 
 		for (size_t j = 0; j < m_pages.size(); j += inc, ++i)
 		{
-			int nFirst = m_pages[j];
+			DisplayPageNumber nFirst = m_pages[j];
 			if (!m_settings.bTwoPages)
 			{
-				if (bAllPages || bOddPages && (nFirst % 2) == 1 || bEvenPages && (nFirst % 2) == 0)
-					m_arrPages.push_back(make_pair(nFirst, 0));
+				if (bAllPages || bOddPages && (nFirst.display() % 2) == 1 || bEvenPages && (nFirst.display() % 2) == 0)
+					m_arrPages.push_back(make_pair(nFirst, DisplayPageNumber(0)));
 			}
 			else
 			{
-				int nSecond = (j + 1 < m_pages.size() ? m_pages[j + 1] : 0);
+				DisplayPageNumber nSecond = (j + 1 < m_pages.size() ? m_pages[j + 1] : DisplayPageNumber(0));
 				if (bAllPages || bOddPages && (i % 2) == 1 || bEvenPages && (i % 2) == 0)
 					m_arrPages.push_back(make_pair(nFirst, nSecond));
 			}
@@ -977,12 +977,12 @@ bool CPrintDlg::ParseRange()
 
 		if (num <= num2)
 		{
-			for (int j = num; j <= num2; ++j)
+			for (DisplayPageNumber j(num); j <= num2; ++j)
 				m_pages.push_back(j);
 		}
 		else
 		{
-			for (int j = num; j >= num2; --j)
+			for (DisplayPageNumber j(num); j >= num2; --j)
 				m_pages.push_back(j);
 		}
 	}

@@ -94,7 +94,7 @@ void CFullscreenWnd::Hide()
 {
 	if (m_pOwner != NULL)
 	{
-		int nPage = m_pView->GetCurrentPage();
+		DisplayPageNumber nPage = m_pView->GetCurrentPage();
 		m_pOwner->UpdatePageInfoFrom(m_pView);
 		m_pOwner->CopyBitmapsFrom(m_pView, true);
 

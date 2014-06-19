@@ -29,12 +29,12 @@ class CGotoPageDlg : public CMyDialog
 	DECLARE_DYNAMIC(CGotoPageDlg)
 
 public:
-	CGotoPageDlg(int nPage, int nPageCount, CWnd* pParent = NULL);
+	CGotoPageDlg(DisplayPageNumber nPage, int nPageCount, CWnd* pParent = NULL);
 	virtual ~CGotoPageDlg();
 
 // Dialog Data
 	enum { IDD = IDD_GOTO_PAGE };
-	int m_nPage;
+	DisplayPageNumber m_nPage;
 
 // Overrides
 protected:
