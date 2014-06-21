@@ -1469,12 +1469,38 @@ bool DjVuSource::SaveAs(const CString& strFileName)
 		// Close open files for this url
 		DataPool::load_file(url);
 
+		// Create an editable copy of the file
 		GP<DjVuDocEditor> pNewDoc = DjVuDocEditor::create_wait(m_pDjVuDoc->get_init_url());
-		for (DisplayPageNumber nPage(m_nPageCount - 1); nPage >= 0; --nPage)
+
+		// Store a mapping from display->real page numbers
+		vector<int> mapping(m_nPageCount);
+		for(DisplayPageNumber i(0); i < m_nPageCount; ++i)
+			mapping[i.display()] = Pages(i).nRealPageNum.real();
+
+		// Loop over all the pages in display order
+		for(DisplayPageNumber i(0); i < m_nPageCount; ++i)
 		{
-			if (Pages(nPage).bDeleted)
-				pNewDoc->remove_page(nPage.display()); //TODO//
+			// Get the current mapping
+			int nRealPageNum = mapping[i.display()];
+			ASSERT(nRealPageNum >= 0);
+
+			// Either delete the page, or move it to the end (either way, it is 
+			// removed from its current location).
+			if(Pages(i).bDeleted)
+				pNewDoc->remove_page(nRealPageNum);
+			else
+				pNewDoc->move_page(nRealPageNum, -1);
+
+			// Update the mapping to reflect the now-missing page
+			mapping[i.display()] = -1;
+			for(int j = i.display()+1; j < m_nPageCount; ++j)
+			{
+				if(mapping[j] >= nRealPageNum)
+					mapping[j]--;
+			}
 		}
+
+		// Save out the modified file
 		pNewDoc->save_as(url, true);
 	}
 	catch (GException&)
