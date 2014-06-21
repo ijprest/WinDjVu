@@ -369,6 +369,8 @@ void move_items_to(C& container, const set<DisplayPageNumber>& items, DisplayPag
 	{
 		temp.emplace_back(move(container[i->display()]));
 		container.erase(container.begin() + i->display());
+		if(*i < target_pos)
+			--target_pos;
 	}
 	for(auto i = temp.begin(); i != temp.end(); ++i)
 	{
