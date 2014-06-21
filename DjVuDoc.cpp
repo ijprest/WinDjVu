@@ -283,7 +283,8 @@ void CDjVuDoc::OnFileClose()
 	if (pMainFrame->IsFullscreenMode())
 		return;
 
-	if (theApp.m_bTopLevelDocs && theApp.GetDocumentCount() > 1)
+	if ((theApp.m_bTopLevelDocs && theApp.GetDocumentCount() > 1) ||
+		  (theApp.GetAppSettings()->bCloseOnLastDoc && theApp.GetDocumentCount() == 1))
 	{
 		pMainFrame->SendMessage(WM_CLOSE);
 		return;

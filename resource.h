@@ -250,6 +250,8 @@
 #define IDC_PAGE_COUNT                  1063
 #define IDC_WRAP_BOOKMARKS              1064
 #define IDC_RESTORE_VIEW                1065
+#define IDC_WRAP_BOOKMARKS2             1065
+#define IDC_CLOSE_ON_LASTDOC            1065
 #define IDC_DONATE                      1066
 #define IDC_CHECK_UPDATES               1066
 #define IDC_STATIC_VERSION              1067

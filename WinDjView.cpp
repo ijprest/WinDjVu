@@ -86,6 +86,7 @@ const TCHAR* s_pszFullscreenHideScroll = _T("fullscreen-hide-scroll");
 const TCHAR* s_pszFullscreenContinuousScroll = _T("fullscreen-continuous");
 const TCHAR* s_pszInvertWheelZoom = _T("invert-wheel-zoom");
 const TCHAR* s_pszCloseOnEsc = _T("close-on-esc");
+const TCHAR* s_pszCloseOnLastDoc = _T("close-on-last-document");
 const TCHAR* s_pszWrapLongBookmarks = _T("wrap-long-bookmarks");
 const TCHAR* s_pszRestoreView = _T("restore-view");
 const TCHAR* s_pszVersion = _T("version");
@@ -564,6 +565,7 @@ void CDjViewApp::LoadSettings()
 	m_appSettings.bFullscreenContinuousScroll = !!GetProfileInt(s_pszGlobalSection, s_pszFullscreenContinuousScroll, m_appSettings.bFullscreenContinuousScroll);
 	m_appSettings.bInvertWheelZoom = !!GetProfileInt(s_pszGlobalSection, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
 	m_appSettings.bCloseOnEsc = !!GetProfileInt(s_pszGlobalSection, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
+	m_appSettings.bCloseOnLastDoc = !!GetProfileInt(s_pszGlobalSection, s_pszCloseOnLastDoc, m_appSettings.bCloseOnLastDoc);
 	m_appSettings.bWrapLongBookmarks = !!GetProfileInt(s_pszGlobalSection, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
 	m_appSettings.bRestoreView = !!GetProfileInt(s_pszGlobalSection, s_pszRestoreView, m_appSettings.bRestoreView);
 	m_appSettings.nLanguage = GetProfileInt(s_pszGlobalSection, s_pszLanguage, m_appSettings.nLanguage);
@@ -738,6 +740,7 @@ void CDjViewApp::SaveSettings()
 	WriteProfileInt(s_pszGlobalSection, s_pszFullscreenContinuousScroll, m_appSettings.bFullscreenContinuousScroll);
 	WriteProfileInt(s_pszGlobalSection, s_pszInvertWheelZoom, m_appSettings.bInvertWheelZoom);
 	WriteProfileInt(s_pszGlobalSection, s_pszCloseOnEsc, m_appSettings.bCloseOnEsc);
+	WriteProfileInt(s_pszGlobalSection, s_pszCloseOnLastDoc, m_appSettings.bCloseOnLastDoc);
 	WriteProfileInt(s_pszGlobalSection, s_pszWrapLongBookmarks, m_appSettings.bWrapLongBookmarks);
 	WriteProfileInt(s_pszGlobalSection, s_pszRestoreView, m_appSettings.bRestoreView);
 	WriteProfileString(s_pszGlobalSection, s_pszVersion, CURRENT_VERSION);
@@ -1384,6 +1387,7 @@ void CDjViewApp::OnFileSettings()
 		m_appSettings.bGenAllThumbnails = !!dlg.m_pageGeneral.m_bGenAllThumbnails;
 		m_appSettings.bInvertWheelZoom = !!dlg.m_pageGeneral.m_bInvertWheelZoom;
 		m_appSettings.bCloseOnEsc = !!dlg.m_pageGeneral.m_bCloseOnEsc;
+		m_appSettings.bCloseOnLastDoc = !!dlg.m_pageGeneral.m_bCloseOnLastDoc;
 		m_appSettings.bWrapLongBookmarks = !!dlg.m_pageGeneral.m_bWrapLongBookmarks;
 		m_appSettings.bFullscreenClicks = !!dlg.m_pageGeneral.m_bFullscreenClicks;
 		m_appSettings.bFullscreenHideScroll = !!dlg.m_pageGeneral.m_bFullscreenHideScroll;

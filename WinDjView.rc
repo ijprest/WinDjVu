@@ -571,7 +571,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,62,26,50,14
 END
 
-IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 222, 171
+IDD_SETTINGS_GENERAL DIALOGEX 0, 0, 223, 185
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -588,15 +588,17 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,63,155,10
     CONTROL         "Close the program when &Escape key is pressed",IDC_CLOSE_ON_ESC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,77,169,10
-    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,87,10
-    LTEXT           "Fullscreen mode",IDC_STATIC,7,108,56,10,SS_CENTERIMAGE
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,62,113,153,1
+    CONTROL         "Wrap &long bookmarks",IDC_WRAP_BOOKMARKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,87,10
+    LTEXT           "Fullscreen mode",IDC_STATIC,7,122,56,10,SS_CENTERIMAGE
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,63,127,153,1
     CONTROL         "&Mouse clicks switch pages",IDC_FULLSCREEN_CLICKS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,122,100,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,136,100,10
     CONTROL         "Always &hide scrollbars",IDC_FULLSCREEN_HIDESCROLL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,136,88,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,150,88,10
     CONTROL         "Enable &continuous scrolling",IDC_FULLSCREEN_CONTINUOUS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,150,104,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,164,104,10
+    CONTROL         "Close the &program when the last document is closed",IDC_CLOSE_ON_LASTDOC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,209,10
 END
 
 IDD_FIND DIALOGEX 0, 0, 287, 64
@@ -634,7 +636,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,64,27,50,14
 END
 
-IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 222, 171
+IDD_SETTINGS_DISPLAY DIALOGEX 0, 0, 223, 185
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Display"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -642,20 +644,20 @@ BEGIN
     CONTROL         "&Invert colors",IDC_INVERT_COLORS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,58,10
     CONTROL         "A&djust settings:",IDC_ADJUST_DISPLAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,68,10
     LTEXT           "&Brightness: -100",IDC_BRIGHTNESS_TEXT,11,36,54,9
-    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,65,35,150,12
+    CONTROL         "",IDC_BRIGHTNESS,"msctls_trackbar32",WS_TABSTOP,66,35,150,12
     LTEXT           "&Contrast: -100",IDC_CONTRAST_TEXT,11,50,54,9
-    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,65,49,150,12
+    CONTROL         "",IDC_CONTRAST,"msctls_trackbar32",WS_TABSTOP,66,49,150,12
     LTEXT           "&Gamma: 1.0",IDC_GAMMA_TEXT,11,64,54,9
-    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,65,63,150,12
+    CONTROL         "",IDC_GAMMA,"msctls_trackbar32",WS_TABSTOP,66,63,150,12
     CONTROL         "Use adjustments for &printing",IDC_ADJUST_PRINTING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,108,10
     CONTROL         "&High quality (but slow) rendering of color pages",IDC_HQ_COLOR_SCALING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,168,10
     CONTROL         "&Subpixel rescaling (looks better on some LCD monitors)",IDC_SUBPIXEL_SCALING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,208,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,209,10
     CONTROL         "Use &transparent zoom window",IDC_TRANSPARENT_ZOOM,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,121,208,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,139,208,1
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,121,209,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,139,209,1
     LTEXT           "&Units:",IDC_STATIC,7,148,23,10
     COMBOBOX        IDC_COMBO_UNITS,32,146,87,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
@@ -739,40 +741,40 @@ BEGIN
     LTEXT           "A dictionary with this name is already installed in the system. Installation will replace the existing dictionary with the currently open file.",IDC_STATIC,7,7,176,26
 END
 
-IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 222, 171
+IDD_SETTINGS_ADVANCED DIALOGEX 0, 0, 223, 185
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Default DjVu Viewer",IDC_STATIC,7,7,66,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,75,11,140,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,76,11,140,1
     LTEXT           "WinDjView is currently not the default viewer for DjVu files.",IDC_DEFAULT_VIEWER_STATUS,21,21,118,19
-    PUSHBUTTON      "&Make default",IDC_MAKE_DEFAULT,145,21,70,14
+    PUSHBUTTON      "&Make default",IDC_MAKE_DEFAULT,146,21,70,14
     CONTROL         "&Tell me if WinDjView is not the default DjVu viewer",IDC_WARN_NOT_DEFAULT_VIEWER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,42,176,10
     LTEXT           "Bookmarks && Annotations",IDC_STATIC,7,60,86,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,94,65,121,1
-    LTEXT           "You can back up all your bookmarks and annotations for DjVu files. The backup file can also be used to transfer the bookmarks to another computer.",IDC_STATIC,21,74,194,28
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,95,65,121,1
+    LTEXT           "You can back up all your bookmarks and annotations for DjVu files. The backup file can also be used to transfer the bookmarks to another computer.",IDC_STATIC,22,74,194,28
     PUSHBUTTON      "&Create a backup",IDC_CREATE_BACKUP,21,103,70,14
     LTEXT           "Miscellaneous",IDC_STATIC,7,125,47,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,55,130,160,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,56,130,160,1
     CONTROL         "&Restore open page and view settings when opening files",IDC_RESTORE_VIEW,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,139,194,10
     CONTROL         "&Automatically check for updates once a week",IDC_CHECK_UPDATES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,153,160,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,152,160,10
 END
 
-IDD_SETTINGS_DICT DIALOGEX 0, 0, 222, 171
+IDD_SETTINGS_DICT DIALOGEX 0, 0, 223, 185
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Dictionaries"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Installed dictionaries:",IDC_STATIC,7,31,69,9
-    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,208,104,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,150,50,14
+    CONTROL         "",IDC_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,42,209,118,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "&Uninstall",IDC_UNINSTALL,7,164,50,14
     LTEXT           "Custom location:",IDC_STATIC,7,7,69,9
     LTEXT           "(Not selected)",IDC_CUSTOM_LOCATION,7,18,192,9
-    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,202,16,13,12
+    PUSHBUTTON      "...",IDC_BROWSE_LOCATION,203,16,13,12
 END
 
 IDD_DOC_PROPERTIES DIALOGEX 0, 0, 339, 231
@@ -884,9 +886,9 @@ BEGIN
     IDD_SETTINGS_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 215
+        RIGHTMARGIN, 216
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 178
     END
 
     IDD_FIND, DIALOG
@@ -916,9 +918,9 @@ BEGIN
     IDD_SETTINGS_DISPLAY, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 215
+        RIGHTMARGIN, 216
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 178
     END
 
     IDD_ANNOTATION, DIALOG
@@ -956,17 +958,17 @@ BEGIN
     IDD_SETTINGS_ADVANCED, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 215
+        RIGHTMARGIN, 216
         TOPMARGIN, 7
-        BOTTOMMARGIN, 163
+        BOTTOMMARGIN, 177
     END
 
     IDD_SETTINGS_DICT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 215
+        RIGHTMARGIN, 216
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 178
     END
 
     IDD_DOC_PROPERTIES, DIALOG

@@ -135,6 +135,7 @@ struct CAppSettings
 	bool bGenAllThumbnails;
 	bool bInvertWheelZoom;
 	bool bCloseOnEsc;
+	bool bCloseOnLastDoc;
 	bool bWrapLongBookmarks;
 	bool bRestoreView;
 	bool bFullscreenClicks;

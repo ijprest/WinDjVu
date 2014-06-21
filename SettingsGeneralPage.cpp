@@ -40,6 +40,7 @@ CSettingsGeneralPage::CSettingsGeneralPage()
 	m_bGenAllThumbnails = appSettings.bGenAllThumbnails;
 	m_bInvertWheelZoom = appSettings.bInvertWheelZoom;
 	m_bCloseOnEsc = appSettings.bCloseOnEsc;
+	m_bCloseOnLastDoc = appSettings.bCloseOnLastDoc;
 	m_bWrapLongBookmarks = appSettings.bWrapLongBookmarks;
 	m_bFullscreenClicks = appSettings.bFullscreenClicks;
 	m_bFullscreenHideScroll = appSettings.bFullscreenHideScroll;
@@ -59,6 +60,7 @@ void CSettingsGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_GEN_ALL_THUMBNAILS, m_bGenAllThumbnails);
 	DDX_Check(pDX, IDC_INVERT_WHEEL_ZOOM, m_bInvertWheelZoom);
 	DDX_Check(pDX, IDC_CLOSE_ON_ESC, m_bCloseOnEsc);
+	DDX_Check(pDX, IDC_CLOSE_ON_LASTDOC, m_bCloseOnLastDoc);
 	DDX_Check(pDX, IDC_WRAP_BOOKMARKS, m_bWrapLongBookmarks);
 	DDX_Check(pDX, IDC_FULLSCREEN_CLICKS, m_bFullscreenClicks);
 	DDX_Check(pDX, IDC_FULLSCREEN_HIDESCROLL, m_bFullscreenHideScroll);

@@ -65,6 +65,7 @@ CAppSettings::CAppSettings()
 	bFullscreenContinuousScroll = false;
 	bInvertWheelZoom = false;
 	bCloseOnEsc = false;
+	bCloseOnLastDoc = false;
 	bWrapLongBookmarks = true;
 	bRestoreView = true;
 

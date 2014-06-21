@@ -37,6 +37,7 @@ public:
 	BOOL m_bGenAllThumbnails;
 	BOOL m_bInvertWheelZoom;
 	BOOL m_bCloseOnEsc;
+	BOOL m_bCloseOnLastDoc;
 	BOOL m_bWrapLongBookmarks;
 	BOOL m_bFullscreenClicks;
 	BOOL m_bFullscreenHideScroll;
