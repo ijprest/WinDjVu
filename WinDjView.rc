@@ -456,7 +456,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 251, 140
+IDD_ABOUTBOX DIALOGEX 0, 0, 251, 160
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About WinDjView"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -465,14 +465,20 @@ BEGIN
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2004-2012 Andrew Zhezherun",IDC_STATIC,40,17,149,8
     LTEXT           "Copyright (C) 2012 Leonid Zhezherun",IDC_STATIC,40,27,149,8
+    LTEXT           "Copyright (C) 2009-2014 Ian Prest",IDC_STATIC,40,37,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
-    LTEXT           "Project homepage:",IDC_STATIC,40,45,64,8
-    LTEXT           "DjVuLibre homepage:",IDC_STATIC,40,55,72,8
-    LTEXT           "http://windjview.sourceforge.net",IDC_STATIC_LINK,106,45,139,8
-    LTEXT           "http://djvu.sourceforge.net",IDC_STATIC_LIB_LINK,114,55,131,8
-    LTEXT           "License",IDC_STATIC_LICENSE,40,72,204,34
-    LTEXT           "You can support further development of this program by donating through PayPal",IDC_STATIC,40,113,137,17
-    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,112,63,21
+    LTEXT           "Project homepage:",IDC_STATIC,32,55,78,8,0,WS_EX_RIGHT
+    CONTROL         "<a href=""http://windjview.sourceforge.net"">http://windjview.sourceforge.net</a>",IDC_SYSLINK1,
+                    "SysLink",WS_TABSTOP,114,55,130,10
+    LTEXT           "DjVuLibre homepage:",IDC_STATIC,36,65,74,8,0,WS_EX_RIGHT
+    CONTROL         "<a href=""http://djvu.sourceforge.net"">http://djvu.sourceforge.net</a>",IDC_SYSLINK2,
+                    "SysLink",WS_TABSTOP,114,65,130,10
+    LTEXT           "Experimental branch:",IDC_STATIC,36,75,74,8,0,WS_EX_RIGHT
+    CONTROL         "<a href=""https://github.com/ijprest/WinDjVu/tree/experimental"">https://github.com/ijprest/WinDjVu</a>",IDC_SYSLINK3,
+                    "SysLink",WS_TABSTOP,114,75,130,10
+    LTEXT           "License",IDC_STATIC_LICENSE,39,91,204,39
+    LTEXT           "You can support further development of this program by donating through PayPal",IDC_STATIC,40,132,137,17
+    CONTROL         "Donate",IDC_DONATE,"Button",BS_OWNERDRAW | BS_BITMAP | WS_TABSTOP,181,132,63,21
 END
 
 IDD_PRINT DIALOGEX 0, 0, 432, 316
@@ -842,8 +848,13 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 244
+        VERTGUIDE, 40
+        VERTGUIDE, 110
+        VERTGUIDE, 114
         TOPMARGIN, 7
-        BOTTOMMARGIN, 133
+        BOTTOMMARGIN, 153
+        HORZGUIDE, 35
+        HORZGUIDE, 132
     END
 
     IDD_PRINT, DIALOG

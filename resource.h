@@ -297,7 +297,10 @@
 #define IDC_DEFAULT_VIEWER_STATUS       1107
 #define IDC_STATIC_LICENSE              1108
 #define IDC_SUBPIXEL_SCALING            1109
+#define IDC_SYSLINK1                    1109
 #define IDC_TRANSPARENT_ZOOM            1110
+#define IDC_SYSLINK2                    1110
+#define IDC_SYSLINK3                    1113
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
 #define ID_VIEW_NEXTPAGE_SHORTCUT       32773
@@ -414,7 +417,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        325
 #define _APS_NEXT_COMMAND_VALUE         33136
-#define _APS_NEXT_CONTROL_VALUE         1109
+#define _APS_NEXT_CONTROL_VALUE         1111
 #define _APS_NEXT_SYMED_VALUE           117
 #endif
 #endif

@@ -433,8 +433,6 @@ public:
 
 // Dialog Data
 	enum { IDD = IDD_ABOUTBOX };
-	CStatic m_weblinkLibrary;
-	CStatic m_weblink;
 	CMyBitmapButton m_btnDonate;
 
 // Overrides
@@ -446,13 +444,10 @@ public:
 
 // Implementation
 protected:
-	CFont m_font;
-
-	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnDonate();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void InvokeLink( NMHDR *pNMHDR, LRESULT *pResult );
 };
 
 CAboutDlg::CAboutDlg()
@@ -463,8 +458,6 @@ CAboutDlg::CAboutDlg()
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CMyDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_STATIC_LINK, m_weblink);
-	DDX_Control(pDX, IDC_STATIC_LIB_LINK, m_weblinkLibrary);
 	DDX_Control(pDX, IDC_DONATE, m_btnDonate);
 
 	CString strVersion = FormatString(IDS_VERSION_ABOUT, CURRENT_VERSION);
@@ -472,10 +465,13 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CMyDialog)
-	ON_WM_CTLCOLOR()
-	ON_WM_SETCURSOR()
-	ON_WM_LBUTTONDOWN()
 	ON_BN_CLICKED(IDC_DONATE, OnDonate)
+	ON_NOTIFY( NM_CLICK, IDC_SYSLINK1, &CAboutDlg::InvokeLink )
+	ON_NOTIFY( NM_RETURN, IDC_SYSLINK1, &CAboutDlg::InvokeLink )
+	ON_NOTIFY( NM_CLICK, IDC_SYSLINK2, &CAboutDlg::InvokeLink )
+	ON_NOTIFY( NM_RETURN, IDC_SYSLINK2, &CAboutDlg::InvokeLink )
+	ON_NOTIFY( NM_CLICK, IDC_SYSLINK3, &CAboutDlg::InvokeLink )
+	ON_NOTIFY( NM_RETURN, IDC_SYSLINK3, &CAboutDlg::InvokeLink )
 END_MESSAGE_MAP()
 
 // App command to run the dialog
@@ -483,80 +479,6 @@ void CDjViewApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
-}
-
-HBRUSH CAboutDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
-{
-	HBRUSH brush = CMyDialog::OnCtlColor(pDC, pWnd, nCtlColor);
-
-	if (pWnd->GetSafeHwnd() == m_weblink.m_hWnd
-			|| pWnd->GetSafeHwnd() == m_weblinkLibrary.m_hWnd)
-	{
-		pDC->SetTextColor(RGB(0, 0, 204));
-	}
-
-	return brush;
-}
-
-BOOL CAboutDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	static HCURSOR hCursor = NULL;
-	if (hCursor == NULL)
-	{
-		hCursor = ::LoadCursor(NULL, IDC_HAND);
-		if (hCursor == NULL)
-			hCursor = theApp.LoadCursor(IDC_CURSOR_LINK);
-	}
-
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-
-	CRect rcWeblink;
-	m_weblink.GetWindowRect(rcWeblink);
-
-	if (rcWeblink.PtInRect(ptCursor))
-	{
-		::SetCursor(hCursor);
-		return true;
-	}
-
-	CRect rcWeblinkLibrary;
-	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
-
-	if (rcWeblinkLibrary.PtInRect(ptCursor))
-	{
-		::SetCursor(hCursor);
-		return true;
-	}
-
-	return CMyDialog::OnSetCursor(pWnd, nHitTest, message);
-}
-
-void CAboutDlg::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CRect rcWeblink;
-	m_weblink.GetWindowRect(rcWeblink);
-	ScreenToClient(rcWeblink);
-
-	if (rcWeblink.PtInRect(point))
-	{
-		::ShellExecute(NULL, _T("open"), LoadString(IDS_WEBSITE_URL),
-				NULL, NULL, SW_SHOW);
-		return;
-	}
-
-	CRect rcWeblinkLibrary;
-	m_weblinkLibrary.GetWindowRect(rcWeblinkLibrary);
-	ScreenToClient(rcWeblinkLibrary);
-
-	if (rcWeblinkLibrary.PtInRect(point))
-	{
-		::ShellExecute(NULL, _T("open"), LoadString(IDS_DJVULIBRE_URL),
-				NULL, NULL, SW_SHOW);
-		return;
-	}
-
-	CMyDialog::OnLButtonDown(nFlags, point);
 }
 
 void CAboutDlg::OnDonate()
@@ -569,22 +491,18 @@ BOOL CAboutDlg::OnInitDialog()
 {
 	CMyDialog::OnInitDialog();
 
-	CFont fnt;
-	CreateSystemDialogFont(fnt);
-	LOGFONT lf;
-	fnt.GetLogFont(&lf);
-
-	lf.lfUnderline = true;
-	m_font.CreateFontIndirect(&lf);
-
-	m_weblink.SetFont(&m_font);
-	m_weblinkLibrary.SetFont(&m_font);
-
 	m_btnDonate.LoadBitmaps(IDB_DONATE);
 
 	GetDlgItem(IDC_STATIC_LICENSE)->SetWindowText(LoadString(IDS_ABOUT_LICENSE));
 
 	return true;
+}
+
+void CAboutDlg::InvokeLink( NMHDR *pNMHDR, LRESULT *pResult )
+{
+	PNMLINK pnmLink = (PNMLINK)pNMHDR;
+	::ShellExecute(NULL, _T("open"), pnmLink->item.szUrl, NULL, NULL, SW_SHOW);
+	*pResult = 0;
 }
 
 
