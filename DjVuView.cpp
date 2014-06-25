@@ -207,6 +207,8 @@ BEGIN_MESSAGE_MAP(CDjVuView, CMyScrollView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
+	ON_WM_MBUTTONDOWN()
+	ON_WM_MBUTTONUP()
 	ON_COMMAND_RANGE(ID_LAYOUT_CONTINUOUS, ID_LAYOUT_FACING, OnViewLayout)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_LAYOUT_CONTINUOUS, ID_LAYOUT_FACING, OnUpdateViewLayout)
 	ON_MESSAGE(WM_PAGE_RENDERED, OnPageRendered)
@@ -1644,8 +1646,8 @@ void CDjVuView::UpdatePageCache(const CSize& szViewport, DisplayPageNumber nPage
 
 		m_pRenderThread->AddReadInfoJob(page.nRealPageNum);
 	}
-	else if (page.rcDisplay.top < nTop + 3*szViewport.cy &&
-			 page.rcDisplay.bottom > nTop - 2*szViewport.cy)
+	else if (page.rcDisplay.top < nTop + 12*szViewport.cy &&
+			 page.rcDisplay.bottom > nTop - 11*szViewport.cy)
 	{
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
@@ -1661,8 +1663,8 @@ void CDjVuView::UpdatePageCache(const CSize& szViewport, DisplayPageNumber nPage
 	{
 		page.DeleteBitmap();
 
-		if (m_nType != Magnify && (page.rcDisplay.top < nTop + 11*szViewport.cy
-				&& page.rcDisplay.bottom > nTop - 10*szViewport.cy
+		if (m_nType != Magnify && (page.rcDisplay.top < nTop + 41*szViewport.cy
+				&& page.rcDisplay.bottom > nTop - 40*szViewport.cy
 				|| nPage == 0 || nPage == m_nPageCount - 1))
 		{
 			m_pRenderThread->AddDecodeJob(page.nRealPageNum);
@@ -1694,8 +1696,8 @@ void CDjVuView::UpdatePageCacheSingle(DisplayPageNumber nPage, bool bUpdateImage
 
 		m_pRenderThread->AddReadInfoJob(page.nRealPageNum);
 	}
-	else if (nPageSize < 3000000 && abs(nPage.display() - m_nPage.display()) <= 2 ||
-			 abs(nPage.display() - m_nPage.display()) <= 1)
+	else if (nPageSize < 3000000 && abs(nPage.display() - m_nPage.display()) <= 8 ||
+			 abs(nPage.display() - m_nPage.display()) <= 4)
 	{
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
@@ -1711,7 +1713,7 @@ void CDjVuView::UpdatePageCacheSingle(DisplayPageNumber nPage, bool bUpdateImage
 	{
 		page.DeleteBitmap();
 
-		if (m_nType != Magnify && (abs(nPage.display() - m_nPage.display()) <= 10 || nPage == 0 || nPage == m_nPageCount - 1))
+		if (m_nType != Magnify && (abs(nPage.display() - m_nPage.display()) <= 40 || nPage == 0 || nPage == m_nPageCount - 1))
 		{
 			m_pRenderThread->AddDecodeJob(page.nRealPageNum);
 			add.push_back(nPage);
@@ -1742,8 +1744,8 @@ void CDjVuView::UpdatePageCacheFacing(DisplayPageNumber nPage, bool bUpdateImage
 
 		m_pRenderThread->AddReadInfoJob(page.nRealPageNum);
 	}
-	else if (nPageSize < 1500000 && nPage >= m_nPage - 4 && nPage <= m_nPage + 5 ||
-			 nPage >= m_nPage - 2 && nPage <= m_nPage + 3)
+	else if (nPageSize < 1500000 && nPage >= m_nPage - 19 && nPage <= m_nPage + 20 ||
+			 nPage >= m_nPage - 11 && nPage <= m_nPage + 12)
 	{
 		if (page.pBitmap == NULL || page.szBitmap != page.pBitmap->GetSize() && bUpdateImages)
 		{
@@ -1759,7 +1761,7 @@ void CDjVuView::UpdatePageCacheFacing(DisplayPageNumber nPage, bool bUpdateImage
 	{
 		page.DeleteBitmap();
 
-		if (m_nType != Magnify && (abs(nPage.display() - m_nPage.display()) <= 10 || nPage == 0 || nPage == m_nPageCount - 1))
+		if (m_nType != Magnify && (abs(nPage.display() - m_nPage.display()) <= 40 || nPage == 0 || nPage == m_nPageCount - 1))
 		{
 			m_pRenderThread->AddDecodeJob(page.nRealPageNum);
 			add.push_back(nPage);
@@ -3489,6 +3491,43 @@ DisplayPageNumber CDjVuView::GetPageNearPoint(CPoint point) const
 	}
 
 	return DisplayPageNumber(-1);
+}
+
+void CDjVuView::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	if(theApp.GetDisplaySettings()->bMiddleButtonMagnify)
+	{
+		UpdateHoverAnnotation(CPoint(-1, -1));
+
+		m_bDragging = true;
+		m_bDraggingMagnify = true;
+
+		m_ptPrevCursor = CPoint(-1, -1);
+
+		StartMagnify();
+		UpdateMagnifyWnd(true);
+
+		SetCapture();
+		ShowCursor();
+		UpdateCursor();
+	}
+	else
+	{
+		CMyScrollView::OnMButtonDown(nFlags, point);
+	}
+}
+
+void CDjVuView::OnMButtonUp(UINT nFlags, CPoint point)
+{
+	if(theApp.GetDisplaySettings()->bMiddleButtonMagnify)
+	{
+		StopDragging();
+		m_nCursorTime = ::GetTickCount();
+	}
+	else
+	{
+		CMyScrollView::OnMButtonUp(nFlags, point);
+	}
 }
 
 void CDjVuView::OnRButtonDown(UINT nFlags, CPoint point)

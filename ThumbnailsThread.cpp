@@ -148,7 +148,7 @@ CDIB* CThumbnailsThread::Render(Job& job)
 {
 	CDIB* pBitmap = NULL;
 
-	GP<DjVuImage> pImage = m_pSource->GetPage(job.nPage, NULL);
+	GP<DjVuImage> pImage = m_pSource->GetPage(m_pSource->RealPageToDisplayPage(job.nPage), NULL);
 	if (pImage != NULL)
 	{
 		CSize szPage(pImage->get_width(), pImage->get_height());

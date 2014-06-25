@@ -94,7 +94,7 @@ protected:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint point);
-	afx_msg LRESULT OnMButtonDown(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnCancelMode();
 	DECLARE_MESSAGE_MAP()
 

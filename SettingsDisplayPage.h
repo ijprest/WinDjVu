@@ -36,6 +36,7 @@ public:
 	BOOL m_bHQColorScaling;
 	BOOL m_bSubpixelScaling;
 	BOOL m_bTransparentZoom;
+	BOOL m_bMiddleButtonMagnify;
 	BOOL m_bInvertColors;
 	BOOL m_bAdjustDisplay;
 	BOOL m_bAdjustPrinting;

@@ -98,7 +98,7 @@ BEGIN_MESSAGE_MAP(CMyScrollView, CView)
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
 	ON_WM_MOUSEWHEEL()
-	ON_MESSAGE(WM_MBUTTONDOWN, OnMButtonDown)
+	ON_WM_MBUTTONDOWN()
 	ON_WM_CANCELMODE()
 END_MESSAGE_MAP()
 
@@ -615,22 +615,19 @@ void CMyScrollView::CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType)
 			GetExStyle() & ~(WS_EX_CLIENTEDGE));
 }
 
-LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
+void CMyScrollView::OnMButtonDown(UINT nFlags, CPoint point)
 {
 	// From MFC:  CScrollView::HandleMButtonDown
 
-	UINT nFlags = static_cast<UINT>(wParam);
-	CPoint point(lParam);
-
 	// If the user has CTRL or SHIFT down, we do not handle the message
 	if (nFlags & (MK_SHIFT | MK_CONTROL))
-		return Default();
+		Default();
 
 	if (!m_bHorzScroll && !m_bVertScroll)
-		return Default();
+		Default();
 
 	if (!OnStartPan())
-		return false;
+		return;
 
 	if (m_pAnchorWnd == NULL)
 	{
@@ -643,7 +640,7 @@ LRESULT CMyScrollView::OnMButtonDown(WPARAM wParam, LPARAM lParam)
 	else
 		m_pAnchorWnd->Hide();
 
-	return true;
+	return;
 }
 
 BOOL CMyScrollView::PreTranslateMessage(MSG* pMsg)

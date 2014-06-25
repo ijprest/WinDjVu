@@ -1054,11 +1054,6 @@ bool DjVuSource::IsPageCached(DisplayPageNumber nPage, Observer* observer)
 	return bCached;
 }
 
-GP<DjVuImage> DjVuSource::GetPage(RealPageNumber nPage, Observer* observer)
-{
-	return GetPage(RealPageToDisplayPage(nPage), observer);
-}
-
 GP<DjVuImage> DjVuSource::GetPage(DisplayPageNumber nPage, Observer* observer)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
@@ -1174,11 +1169,6 @@ GP<DjVuImage> DjVuSource::GetPage(DisplayPageNumber nPage, Observer* observer)
 	return pImage;
 }
 
-PageInfo DjVuSource::GetPageInfo(RealPageNumber nPage, bool bNeedText, bool bNeedAnno)
-{
-	return GetPageInfo(RealPageToDisplayPage(nPage), bNeedText, bNeedAnno);
-}
-
 PageInfo DjVuSource::GetPageInfo(DisplayPageNumber nPage, bool bNeedText, bool bNeedAnno)
 {
 	ASSERT(nPage >= 0 && nPage < m_nPageCount);
@@ -1205,11 +1195,6 @@ PageInfo DjVuSource::GetPageInfo(DisplayPageNumber nPage, bool bNeedText, bool b
 	m_lock.Unlock();
 
 	return info;
-}
-
-void DjVuSource::RemoveFromCache(RealPageNumber nPage, Observer* observer)
-{
-	RemoveFromCache(RealPageToDisplayPage(nPage), observer);
 }
 
 void DjVuSource::RemoveFromCache(DisplayPageNumber nPage, Observer* observer)

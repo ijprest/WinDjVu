@@ -101,15 +101,15 @@ unsigned int __stdcall CRenderThread::RenderThreadProc(void* pvData)
 			break;
 
 		case DECODE:
-			pThread->m_pSource->GetPage(job.nPage, pThread->m_pOwner);
+			pThread->m_pSource->GetPage(pThread->m_pSource->RealPageToDisplayPage(job.nPage), pThread->m_pOwner);
 			break;
 
 		case READINFO:
-			pThread->m_pSource->GetPageInfo(job.nPage);
+			pThread->m_pSource->GetPageInfo(pThread->m_pSource->RealPageToDisplayPage(job.nPage));
 			break;
 
 		case CLEANUP:
-			pThread->m_pSource->RemoveFromCache(job.nPage, pThread->m_pOwner);
+			pThread->m_pSource->RemoveFromCache(pThread->m_pSource->RealPageToDisplayPage(job.nPage), pThread->m_pOwner);
 			break;
 		}
 
@@ -194,7 +194,7 @@ void CRenderThread::RemoveFromQueue(RealPageNumber nPage)
 
 CDIB* CRenderThread::Render(Job& job)
 {
-	GP<DjVuImage> pImage = m_pSource->GetPage(job.nPage, m_pOwner);
+	GP<DjVuImage> pImage = m_pSource->GetPage(m_pSource->RealPageToDisplayPage(job.nPage), m_pOwner);
 	CDIB* pBitmap = NULL;
 
 	if (pImage != NULL)

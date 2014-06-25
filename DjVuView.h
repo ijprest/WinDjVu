@@ -227,7 +227,7 @@ protected:
 
 		void Init(DjVuSource* pSource, bool bNeedText = false, bool bNeedAnno = false)
 		{
-			info.Update(pSource->GetPageInfo(nRealPageNum, bNeedText, bNeedAnno));
+			info.Update(pSource->GetPageInfo(pSource->RealPageToDisplayPage(nRealPageNum), bNeedText, bNeedAnno));
 		}
 
 		RealPageNumber nRealPageNum;
@@ -443,6 +443,8 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnFilePrint();
 	afx_msg void OnViewLayout(UINT nID);
 	afx_msg void OnUpdateViewLayout(CCmdUI* pCmdUI);

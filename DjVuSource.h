@@ -245,16 +245,13 @@ public:
 	static DjVuSource* FromFile(const CString& strFileName);
 	static void SetApplication(IApplication* pApp) { pApplication = pApp; }
 
-	GP<DjVuImage> GetPage(RealPageNumber nPage, Observer* observer = NULL);
 	GP<DjVuImage> GetPage(DisplayPageNumber nPage, Observer* observer = NULL);
-	void RemoveFromCache(RealPageNumber nPage, Observer* observer);
 	void RemoveFromCache(DisplayPageNumber nPage, Observer* observer);
 	void ChangeObservedPages(Observer* observer,
 			const vector<DisplayPageNumber>& add, const vector<DisplayPageNumber>& remove);
 	void DeletePage(DisplayPageNumber nPage, bool bDelete);
 	void MovePages(const set<DisplayPageNumber>& pages, DisplayPageNumber nIndex);
 
-	PageInfo GetPageInfo(RealPageNumber nPage, bool bNeedText = false, bool bNeedAnno = false);
 	PageInfo GetPageInfo(DisplayPageNumber nPage, bool bNeedText = false, bool bNeedAnno = false);
 	bool IsPageCached(DisplayPageNumber nPage, Observer* observer);
 	int GetPageCount() const { return m_nPageCount; }
@@ -312,7 +309,6 @@ protected:
 
 	vector<unique_ptr<PageData>> m_pages_;
 	PageData& Pages(DisplayPageNumber nPage) { return *m_pages_[nPage.display()]; }
-	PageData& Pages(RealPageNumber nPage) { return *m_pages_[RealPageToDisplayPage(nPage).display()]; }
 
 	DocSettings* m_pSettings;
 	DictionaryInfo m_dictInfo;

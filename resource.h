@@ -302,6 +302,8 @@
 #define IDC_SYSLINK1                    1109
 #define IDC_TRANSPARENT_ZOOM            1110
 #define IDC_SYSLINK2                    1110
+#define IDC_TRANSPARENT_ZOOM2           1111
+#define IDC_MIDDLEBUTTON_ZOOM           1111
 #define IDC_SYSLINK3                    1113
 #define ID_VIEW_NEXTPAGE                32771
 #define ID_VIEW_PREVIOUSPAGE            32772
