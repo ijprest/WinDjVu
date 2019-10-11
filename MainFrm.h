@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -50,6 +50,11 @@ public:
 
 	void ActivateDocument(CDocument* pDocument);
 	void UpdateToolbars();
+
+	int GetTabCount();
+	void RestoreOpenTabs();
+	void SaveOpenTabs();
+	void LoadActiveTab();
 
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
@@ -105,6 +110,9 @@ protected:
 	void UpdateSettings();
 	void LanguageChanged();
 	void OnViewActivated(const CDjVuView* pView);
+	bool m_bTabActivating;
+	bool m_bHadActiveView;
+	HMENU m_hPrevMenu;
 
 	void DoSave(LPCTSTR filename);
 
@@ -172,6 +180,8 @@ public:
 	afx_msg void OnNewVersion();
 	afx_msg void OnNcDestroy();
 	afx_msg void OnUpdateDisable(CCmdUI* pCmdUI);
+	afx_msg void OnFileClose();
+	afx_msg void OnUpdateFileClose(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 };
 

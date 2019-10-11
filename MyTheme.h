@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@
 // Windows XP theme API
 
 #pragma once
-
-#ifndef _UXTHEME_H_ // This shit already defined by Windows
+#if 0
 #pragma pack(push,4)
 #ifndef THEMEAPI
 
@@ -127,8 +126,7 @@ struct TMSCHEMAINFO
 #ifndef WM_THEMECHANGED
 #define WM_THEMECHANGED     0x031A
 #endif
-
-#endif // _UXTHEME_H_
+#endif
 
 bool IsThemed();
 
@@ -220,8 +218,7 @@ HRESULT XPEnableTheming(BOOL fEnable);
 HRESULT XPDrawThemeBackgroundEx(HTHEME hTheme, HDC hdc,
     int iPartId, int iStateId, const RECT* pRect, const DTBGOPTS* pOptions);
 
-#ifndef _UXTHEME_H_ // This shit already defined by Windows
-
+#if 0
 /////////////////////////////////////////////////////////////////////
 // Theme Manager properties, parts, states, etc
 
@@ -1387,5 +1384,4 @@ enum MENUBANDSTATES
     MDS_CHECKED = 5,
     MDS_HOTCHECKED = 6,
 };
-
-#endif // _UXTHEME_H_
+#endif

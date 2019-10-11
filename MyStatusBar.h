@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -43,5 +43,5 @@ protected:
 
 // Generated message map functions
 	DECLARE_MESSAGE_MAP()
-	int OnSetText(LPCTSTR lpszText);
+	afx_msg int OnSetText(LPCTSTR lpszText);
 };

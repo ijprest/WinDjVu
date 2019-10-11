@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -413,9 +413,6 @@ HRESULT XPGetThemeMargins(HTHEME hTheme, HDC hdc, int iPartId,
 
 bool IsThemed()
 {
-	if (!IsWinXPOrLater())
-		return false;
-
 	if (!XPIsAppThemed() && !XPIsThemeActive())
 		return false;
 

@@ -104,10 +104,9 @@ IDR_DjVuTYPE            ICON                    "res\\DjVuDoc.ico"
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP                  "res\\Toolbar_legacy.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
 IDR_TOOLBAR_MODERN      BITMAP                  "res\\Toolbar.bmp"
 IDR_TOOLBAR_GRAYED      BITMAP                  "res\\Toolbar_grayed.bmp"
-IDR_TOOLBAR_LEGACY      BITMAP                  "res\\Toolbar_legacy.bmp"
 IDB_CLOSE               BITMAP                  "res\\close.bmp"
 IDB_CLOSE_TAB           BITMAP                  "res\\close_tab.bmp"
 IDB_SETTINGS            BITMAP                  "res\\settings.bmp"
@@ -115,10 +114,9 @@ IDB_BOOKMARKS           BITMAP                  "res\\bookmarks.bmp"
 IDB_DONATE              BITMAP                  "res\\donate.bmp"
 IDB_PAN_ANCHOR          BITMAP                  "res\\pan_anchor.bmp"
 IDB_HOURGLASS           BITMAP                  "res\\hourglass.bmp"
-IDR_DICT_BAR            BITMAP                  "res\\dictbar_legacy.bmp"
+IDR_DICT_BAR            BITMAP                  "res\\dictbar.bmp"
 IDR_DICT_BAR_MODERN     BITMAP                  "res\\dictbar.bmp"
 IDR_DICT_BAR_GRAYED     BITMAP                  "res\\dictbar_grayed.bmp"
-IDR_DICT_BAR_LEGACY     BITMAP                  "res\\dictbar_legacy.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -181,6 +179,8 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close\tCtrl+W",              ID_FILE_CLOSE
+        MENUITEM SEPARATOR
         MENUITEM "&Settings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
@@ -196,6 +196,12 @@ BEGIN
         BEGIN
             MENUITEM "&English",                    ID_LANGUAGE_FIRST
         END
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&Fullscreen\tCtrl+L",         ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Activate this document",      ID_WINDOW_ACTIVATE_FIRST
     END
     POPUP "&Help"
     BEGIN
@@ -221,7 +227,7 @@ BEGIN
         MENUITEM "&Document Properties...",     ID_FILE_DOC_PROPERTIES
         MENUITEM "Se&ttings...\tCtrl+,",        ID_FILE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tCtrl+Q",               ID_APP_EXIT
     END
@@ -463,8 +469,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,9,9,20,20
     LTEXT           "WinDjView",IDC_STATIC_VERSION,40,7,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2004-2012 Andrew Zhezherun",IDC_STATIC,40,17,149,8
-    LTEXT           "Copyright (C) 2012 Leonid Zhezherun",IDC_STATIC,40,27,149,8
+    LTEXT           "Copyright (C) 2004-2015 Andrew Zhezherun",IDC_STATIC,40,17,149,8
+    LTEXT           "Copyright (C) 2012-2015 Leonid Zhezherun",IDC_STATIC,40,27,149,8
     LTEXT           "Copyright (C) 2009-2014 Ian Prest",IDC_STATIC,40,37,149,8
     DEFPUSHBUTTON   "Close",IDOK,194,7,50,14,WS_GROUP
     LTEXT           "Project homepage:",IDC_STATIC,32,55,78,8,0,WS_EX_RIGHT
@@ -578,8 +584,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "&Open each document in its own top-level window",IDC_TOP_LEVEL_DOCUMENTS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,175,10
-    CONTROL         "&Warn when closing multiple documents",IDC_WARN_CLOSE_MULTIPLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,139,10
+    CONTROL         "&Restore last open tabs on startup",IDC_RESTORE_TABS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,21,124,10
     CONTROL         "Hi&de tabs if only one document is open",IDC_HIDE_SINGLE_TAB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,35,139,10
     CONTROL         "Generate &thumbnails for all pages in background",IDC_GEN_ALL_THUMBNAILS,
@@ -807,8 +813,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,2,0
- PRODUCTVERSION 2,0,2,0
+ FILEVERSION 2,1,0,0
+ PRODUCTVERSION 2,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -825,12 +831,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Andrew Zhezherun"
             VALUE "FileDescription", "WinDjView"
-            VALUE "FileVersion", "2.0.2"
+            VALUE "FileVersion", "2.1"
             VALUE "InternalName", "WinDjView.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2004-2012 Andrew Zhezherun. All rights reserved."
+            VALUE "LegalCopyright", "Copyright (C) 2004-2015 Andrew Zhezherun. All rights reserved."
             VALUE "OriginalFilename", "WinDjView.exe"
             VALUE "ProductName", "WinDjView"
-            VALUE "ProductVersion", "2.0.2"
+            VALUE "ProductVersion", "2.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -1199,9 +1205,8 @@ BEGIN
     IDS_PAPER_SIZE          "%s x %s %s"
     IDS_VERSION_INFO        "WinDjView %s\nby Andrew Zhezherun"
     IDS_VERSION_ABOUT       "WinDjView %s"
-    IDS_CURRENT_VERSION     "2.0.2 (experimental)"
+    IDS_CURRENT_VERSION     "2.1 (experimental)"
     IDS_FATAL_ERROR         "A fatal error has occurred.\n\nIt could have been caused by a malformed djvu document. The application may not perform properly after this error. You are strongly advised to reopen the application.\n\nPress OK to close the application, or press Cancel to go back to your open documents."
-    IDS_WARN_CLOSE_MULTIPLE "You are about to close %d open documents. Are you sure\nyou want to proceed?"
     IDS_OPENFILE            "Open"
     IDS_ALLFILTER           "All Files (*.*)"
     IDS_SETTINGS            "Settings"

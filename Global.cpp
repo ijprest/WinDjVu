@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -123,20 +123,6 @@ void Observable::UpdateObservers(const Message& message)
 
 // Version
 
-bool IsWinNT()
-{
-	return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_NT4), LOBYTE(_WIN32_WINNT_NT4), 0);
-}
-
-bool IsWin2kOrLater()
-{
-	return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0);
-}
-
-bool IsWinXPOrLater()
-{
-	return IsWindowsXPOrGreater();
-}
 
 bool IsWinVistaOrLater()
 {
@@ -274,10 +260,8 @@ CString MakeCString(const GUTF8String& text)
 	// Treat input string as non-UTF8 if it is not well-formed
 	DWORD dwFlags = 0;
 
-	// Only Windows XP supports checking for invalid characters in UTF8 encoding
-	// inside MultiByteToWideChar function
-	if (IsWinXPOrLater())
-		dwFlags |= MB_ERR_INVALID_CHARS;
+	// Check for invalid characters in UTF8 encoding
+	dwFlags |= MB_ERR_INVALID_CHARS;
 
 	// Make our own check anyway
 	if (!IsValidUTF8(text))
@@ -327,10 +311,8 @@ bool MakeWString(const GUTF8String& text, wstring& result)
 
 	DWORD dwFlags = 0;
 
-	// Only Windows XP supports checking for invalid characters in UTF8 encoding
-	// inside MultiByteToWideChar function
-	if (IsWinXPOrLater())
-		dwFlags |= MB_ERR_INVALID_CHARS;
+	// Check for invalid characters in UTF8 encoding
+	dwFlags |= MB_ERR_INVALID_CHARS;
 
 	// Make our own check anyway
 	int nSize;
@@ -383,8 +365,7 @@ void CreateSystemDialogFont(CFont& font)
 	HGDIOBJ hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	::GetObject(hFont, sizeof(LOGFONT), &lf);
 
-	if (IsWin2kOrLater())
-		_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
+	_tcscpy(lf.lfFaceName, _T("MS Shell Dlg 2"));
 
 	font.CreateFontIndirect(&lf);
 }
@@ -868,10 +849,10 @@ void MD5::Append(const void *data, size_t len)
 	const unsigned char* p = (unsigned char*) data;
 	size_t left = len;
 	size_t offset = (state->count[0] >> 3) & 63;
-	DWORD nbits = (DWORD)len << 3;
+	DWORD nbits = static_cast<DWORD>(len << 3);
 
 	// Update the message length
-	state->count[1] += (DWORD)len >> 29;
+	state->count[1] += static_cast<DWORD>(len >> 29);
 	state->count[0] += nbits;
 	if (state->count[0] < nbits)
 		state->count[1]++;

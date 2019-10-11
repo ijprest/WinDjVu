@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ int CMyStatusBar::OnSetText(LPCTSTR lpszText)
 	ASSERT(::IsWindow(m_hWnd));
 
 	m_strHilightMsg = _T("");
-	LRESULT result = __super::OnSetText(lpszText);
+	int result = CStatusBar::OnSetText(lpszText);
 	GetStatusBarCtrl().SetText(lpszText, 0, SBT_NOBORDERS);
 
 	return result;
