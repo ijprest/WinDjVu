@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_SETTINGS_GENERAL };
 	BOOL m_bTopLevelDocs;
-	BOOL m_bWarnCloseMultiple;
+	BOOL m_bRestoreTabs;
 	BOOL m_bHideSingleTab;
 	BOOL m_bGenAllThumbnails;
 	BOOL m_bInvertWheelZoom;
@@ -45,4 +45,5 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	DECLARE_MESSAGE_MAP()
+	afx_msg void OnTopLevelDocs();
 };

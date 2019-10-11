@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -71,9 +71,6 @@ protected:
 	set<Observer*> m_observers;
 };
 
-bool IsWinNT();
-bool IsWin2kOrLater();
-bool IsWinXPOrLater();
 bool IsWinVistaOrLater();
 
 void MakeWString(const CString& strText, wstring& result);
@@ -150,6 +147,7 @@ inline CSize GetClientSize(const CWnd& wnd)
 #define KEY_STATE_CHANGED 20
 #define DICT_LIST_CHANGED 21
 #define SIDEBAR_TAB_CHANGED 22
+#define TAB_ACTIVATING 23
 #define TAB_ACTIVATED 24
 #define TAB_CLOSED 25
 #define ANNOTATIONS_CHANGED 26
@@ -230,10 +228,11 @@ struct KeyStateChanged : public Message
 
 struct TabMsg : public Message
 {
-	TabMsg(int msg, CWnd* pWnd_)
-		: Message(msg), pWnd(pWnd_) {}
+	TabMsg(int msg, CWnd* pWnd_, int nTab_)
+		: Message(msg), pWnd(pWnd_), nTab(nTab_) {}
 
 	CWnd* pWnd;
+	int nTab;
 };
 
 struct PageRangeMsg : public Message

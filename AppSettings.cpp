@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -57,7 +57,6 @@ CAppSettings::CAppSettings()
 
 	bWarnNotDefaultViewer = true;
 	bTopLevelDocs = false;
-	bWarnCloseMultiple = true;
 	bHideSingleTab = false;
 	bGenAllThumbnails = true;
 	bFullscreenClicks = true;
@@ -67,6 +66,8 @@ CAppSettings::CAppSettings()
 	bCloseOnEsc = false;
 	bWrapLongBookmarks = true;
 	bRestoreView = true;
+	nStartupTab = 0;
+	bRestoreTabs = true;
 
 	bCheckUpdates = true;
 	nLastUpdateTime = 0;

@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -113,6 +113,11 @@ void CMyDocTemplate::InitialUpdateMDIChild(CWnd* pMDIChild, CDocument* pDoc, BOO
 
 	pMainFrame->ActivateDocument(pDoc);
 	pMainFrame->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_UPDATENOW | RDW_ALLCHILDREN);
+}
+
+CWnd* CMyDocTemplate::CreateEmptyMDIChild()
+{
+	return CreateNewMDIChild(NULL);
 }
 
 CWnd* CMyDocTemplate::CreateNewMDIChild(CDocument* pDoc)

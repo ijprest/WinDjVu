@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -128,7 +128,6 @@ struct CAppSettings
 
 	bool bWarnNotDefaultViewer;
 	bool bTopLevelDocs;
-	bool bWarnCloseMultiple;
 	bool bHideSingleTab;
 	bool bGenAllThumbnails;
 	bool bInvertWheelZoom;
@@ -150,6 +149,10 @@ struct CAppSettings
 	list<CString> searchHistory;
 	CString strFind;
 	bool bMatchCase;
+
+	bool bRestoreTabs;
+	int nStartupTab;
+	vector<CString> openTabs;
 
 	enum UnitType
 	{

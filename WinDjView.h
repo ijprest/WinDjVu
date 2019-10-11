@@ -1,5 +1,5 @@
 //	WinDjView
-//	Copyright (C) 2004-2012 Andrew Zhezherun
+//	Copyright (C) 2004-2015 Andrew Zhezherun
 //
 //	This program is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
@@ -64,6 +64,7 @@ public:
 	CDjVuDoc* OpenDocument(LPCTSTR lpszFileName, const GUTF8String& strPage, bool bAddHistoryPoint = true);
 	CDjVuDoc* FindOpenDocument(LPCTSTR lpszFileName);
 	int GetDocumentCount();
+	CMyDocTemplate* GetDocumentTemplate();
 
 	CMainFrame* CreateMainFrame(bool bAppStartup = false, int nCmdShow = -1);
 	void RemoveMainFrame(CMainFrame* pMainFrame);
@@ -172,8 +173,10 @@ public:
 	virtual void OnUpdate(const Observable* source, const Message* message);
 
 	bool m_bInitialized;
+	bool m_bClosing;
 	bool m_bTopLevelDocs;
 	CString m_strNewVersion;
+	bool m_bNoAboutOnStartup;
 
 // Implementation
 protected:
