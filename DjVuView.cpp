@@ -2030,8 +2030,8 @@ void CDjVuView::PreparePageRectFacing(const CSize& szBounds, DisplayPageNumber n
 			pNextPage->rcDisplay.bottom = pPage->rcDisplay.bottom;
 		}
 	}
-	else if (nPage == 0 && m_bFirstPageAlone && !m_bRightToLeft
-			|| nPage == m_nPageCount - 1 && m_bRightToLeft)
+	else if ((nPage == 0 && m_bFirstPageAlone && !m_bRightToLeft && !pPage->IsWide())
+			|| (nPage == m_nPageCount - 1 && m_bRightToLeft))
 	{
 		// Display this page on the right
 		pPage->ptOffset.x += pPage->szBitmap.cx + m_nFacingGap + 2*m_nPageBorder + m_nPageShadow;
