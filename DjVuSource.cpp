@@ -1514,8 +1514,7 @@ void DjVuSource::UpdateDictionaries()
 DisplayPageNumber DjVuSource::RealPageToDisplayPage(RealPageNumber nPage)
 {
 	auto it = find_if(m_pages_.begin(), m_pages_.end(), [&](const unique_ptr<PageData>& page) -> bool { return page->nRealPageNum == nPage; });
-	ASSERT(it != m_pages_.end());
-	return DisplayPageNumber(it - m_pages_.begin());
+	return it == m_pages_.end() ? DisplayPageNumber(0) : DisplayPageNumber(it - m_pages_.begin());
 }
 
 RealPageNumber DjVuSource::DisplayPageToRealPage(DisplayPageNumber nPage)
