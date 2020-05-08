@@ -106,7 +106,7 @@ BOOL CDjVuDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	CFile file;
 	if (!file.Open(lpszPathName, CFile::modeRead | CFile::shareDenyWrite))
 	{
-		AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + lpszPathName);
+		//AfxMessageBox(LoadString(IDS_FAILED_TO_OPEN) + lpszPathName);
 		return false;
 	}
 	file.Close();
